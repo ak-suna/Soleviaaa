@@ -27,6 +27,19 @@ export const signup = async (userData) => {
         throw err; // rethrow so frontend form can handle it
     }
 };
+
+export const resendVerification = async (email) => {
+    const response = await fetch(`${API_URL}/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || "Failed to resend verification email");
+    }
+    return data;
+};
 export const setToken = (token) => {
     localStorage.setItem("token", token);
 };

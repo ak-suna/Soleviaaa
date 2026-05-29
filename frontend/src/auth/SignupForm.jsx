@@ -422,6 +422,7 @@ const SignupForm = () => {
     const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [emailWarning, setEmailWarning] = useState("");
 
     // Visibility toggle states
     const [showPassword, setShowPassword] = useState(false);
@@ -473,7 +474,10 @@ const SignupForm = () => {
                 address: formData.address
             };
             console.log("Submitting payload:", payload);
-            await signup(payload);
+            const data = await signup(payload);
+            if (data.emailSent === false) {
+                setEmailWarning("We could not send the verification email. Go to login and use “Resend verification email”.");
+            }
             setSuccess(true);
             setTimeout(() => {
                 navigate("/login");
@@ -493,6 +497,11 @@ const SignupForm = () => {
                     <p className="text-lg text-gray-700 mb-2">
                         📧 Please check your email to verify your account.
                     </p>
+                    {emailWarning && (
+                        <p className="text-orange-600 bg-orange-50 py-2 px-4 rounded-lg mb-2 text-sm">
+                            {emailWarning}
+                        </p>
+                    )}
                     <p className="text-gray-600">
                         Redirecting to login...
                     </p>

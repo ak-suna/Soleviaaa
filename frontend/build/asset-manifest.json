@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "/static/css/main.e506f0cc.css",
+    "main.js": "/static/js/main.25b2424d.js",
+    "static/media/gbb.png": "/static/media/gbb.1630e460688f3186fe56.png",
+    "static/media/BeautyMountain.ttf": "/static/media/BeautyMountain.4fffdced81aa2a22b57a.ttf",
+    "static/media/Flothab.ttf": "/static/media/Flothab.fc2b3364fa51f6f38aff.ttf",
+    "static/media/logo.png": "/static/media/logo.98210f854cd6848168c9.png",
+    "static/media/Brasika.otf": "/static/media/Brasika.459442652d4bdfac7606.otf",
+    "index.html": "/index.html",
+    "main.e506f0cc.css.map": "/static/css/main.e506f0cc.css.map",
+    "main.25b2424d.js.map": "/static/js/main.25b2424d.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e506f0cc.css",
+    "static/js/main.25b2424d.js"
+  ]
+}

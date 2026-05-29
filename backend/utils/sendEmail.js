@@ -1,28 +1,121 @@
 
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import config from "../src/config.js";
 
 dotenv.config();
 
-// Helper function to create transporter
-const getTransporter = () => {
+let resendClient = null;
+
+function getEmailMode() {
+    if (process.env.RESEND_API_KEY) return "resend";
+    if (process.env.SMTP_HOST || process.env.EMAIL_USER) return "smtp";
+    return "none";
+}
+
+function getFromAddress() {
+    if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
+    if (process.env.RESEND_API_KEY) return "Solevia <onboarding@resend.dev>";
+    return `"Solevia" <${process.env.EMAIL_USER}>`;
+}
+
+function assertEmailConfig() {
+    if (getEmailMode() === "none") {
+        throw new Error(
+            "Email is not configured on the server. Set RESEND_API_KEY or EMAIL_USER + EMAIL_PASSWORD (or SMTP_* variables)."
+        );
+    }
+    if (!config.FRONTEND_URL) {
+        throw new Error("FRONTEND_URL is not set on the server");
+    }
+}
+
+function getSmtpTransporter() {
+    const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+    const pass = (process.env.SMTP_PASS || process.env.EMAIL_PASSWORD || "").replace(/\s/g, "");
+
+    if (!user || !pass) {
+        throw new Error("SMTP credentials missing (EMAIL_USER/EMAIL_PASSWORD or SMTP_USER/SMTP_PASS)");
+    }
+
+    if (process.env.SMTP_HOST) {
+        const port = Number(process.env.SMTP_PORT || 587);
+        return nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port,
+            secure: process.env.SMTP_SECURE === "true" || port === 465,
+            auth: { user, pass },
+        });
+    }
+
+    // Explicit Gmail SMTP (more reliable than service: "gmail" on cloud hosts)
     return nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD,
-        },
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: { user, pass },
     });
-};
+}
+
+async function sendEmailMessage({ to, subject, html }) {
+    assertEmailConfig();
+    const from = getFromAddress();
+
+    if (getEmailMode() === "resend") {
+        const { Resend } = await import("resend");
+        if (!resendClient) {
+            resendClient = new Resend(process.env.RESEND_API_KEY);
+        }
+
+        const { data, error } = await resendClient.emails.send({
+            from,
+            to: [to],
+            subject,
+            html,
+        });
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        return data;
+    }
+
+    const transporter = getSmtpTransporter();
+    return transporter.sendMail({ from, to, subject, html });
+}
+
+export async function verifyEmailTransport() {
+    const mode = getEmailMode();
+
+    if (mode === "none") {
+        console.warn("⚠️  Email NOT configured — verification, password reset, and notification emails will fail.");
+        console.warn("    Set RESEND_API_KEY (recommended on Render) or EMAIL_USER + EMAIL_PASSWORD.");
+        return false;
+    }
+
+    if (mode === "resend") {
+        console.log("✅ Email transport: Resend API");
+        return true;
+    }
+
+    try {
+        const transporter = getSmtpTransporter();
+        await transporter.verify();
+        console.log(`✅ Email transport: SMTP verified (${process.env.SMTP_HOST || "smtp.gmail.com"})`);
+        return true;
+    } catch (error) {
+        console.error("❌ Email SMTP verification failed:", error.message);
+        console.error("   Gmail often blocks cloud servers like Render. Use RESEND_API_KEY or Brevo/SendGrid SMTP.");
+        return false;
+    }
+}
 
 export const sendVerificationEmail = async (user) => {
     try {
-        const transporter = getTransporter();
+        const verificationUrl = `${config.FRONTEND_URL}/verify-email/${user.verificationCode}`;
 
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${user.verificationCode}`;
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
+        await sendEmailMessage({
             to: user.email,
             subject: "Verify Your Email - SOLEVIA",
             html: `
@@ -42,24 +135,20 @@ export const sendVerificationEmail = async (user) => {
                     <p>If you didn't create an account, please ignore this email.</p>
                 </div>
             `,
-        };
+        });
 
-        await transporter.sendMail(mailOptions);
         console.log("✅ Verification email sent to:", user.email);
     } catch (error) {
         console.error("❌ Error sending verification email:", error);
-        throw new Error("Failed to send verification email");
+        throw new Error(`Failed to send verification email: ${error.message}`);
     }
 };
 
 export const sendPasswordResetEmail = async (user, resetToken) => {
     try {
-        const transporter = getTransporter();
+        const resetUrl = `${config.FRONTEND_URL}/reset-password/${resetToken}`;
 
-        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
+        await sendEmailMessage({
             to: user.email,
             subject: "Password Reset Request - SOLEVIA",
             html: `
@@ -79,23 +168,21 @@ export const sendPasswordResetEmail = async (user, resetToken) => {
                     <p style="color: #d9534f; font-weight: bold;">⚠️ If you didn't request a password reset, please ignore this email and your password will remain unchanged.</p>
                 </div>
             `,
-        };
+        });
 
-        await transporter.sendMail(mailOptions);
         console.log("✅ Password reset email sent to:", user.email);
     } catch (error) {
         console.error("❌ Error sending password reset email:", error);
-        throw new Error("Failed to send password reset email");
+        throw new Error(`Failed to send password reset email: ${error.message}`);
     }
 };
+
 export const sendNotificationEmail = async (user, notification) => {
     try {
-        const transporter = getTransporter();
-
         const priorityColors = {
             HIGH: "#d9534f",
             MEDIUM: "#f0ad4e",
-            LOW: "#5bc0de"
+            LOW: "#5bc0de",
         };
 
         const color = priorityColors[notification.priority] || "#5bc0de";
@@ -103,7 +190,7 @@ export const sendNotificationEmail = async (user, notification) => {
         let actionButton = "";
         if (notification.data?.actionUrl) {
             actionButton = `
-                <a href="${process.env.FRONTEND_URL}${notification.data.actionUrl}" 
+                <a href="${config.FRONTEND_URL}${notification.data.actionUrl}" 
                    style="display: inline-block; padding: 12px 24px; margin: 20px 0; 
                           background-color: ${color}; color: white; text-decoration: none; 
                           border-radius: 4px;">
@@ -112,8 +199,7 @@ export const sendNotificationEmail = async (user, notification) => {
             `;
         }
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
+        await sendEmailMessage({
             to: user.email,
             subject: `${notification.title} - SOLEVIA`,
             html: `
@@ -129,26 +215,23 @@ export const sendNotificationEmail = async (user, notification) => {
                         <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
                         <p style="color: #999; font-size: 12px;">
                             You can manage your notification preferences in your 
-                            <a href="${process.env.FRONTEND_URL}/settings">account settings</a>.
+                            <a href="${config.FRONTEND_URL}/settings">account settings</a>.
                         </p>
                     </div>
                 </div>
             `,
-        };
+        });
 
-        await transporter.sendMail(mailOptions);
         console.log(`✅ Notification email sent to: ${user.email}`);
     } catch (error) {
         console.error("❌ Error sending notification email:", error);
-        throw new Error("Failed to send notification email");
+        throw new Error(`Failed to send notification email: ${error.message}`);
     }
 };
-// Send email to user when disabled by admin
+
 export const sendUserDisabledEmail = async (user, reason) => {
     try {
-        const transporter = getTransporter();
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
+        await sendEmailMessage({
             to: user.email,
             subject: "Your Account Has Been Disabled - SOLEVIA",
             html: `
@@ -161,20 +244,17 @@ export const sendUserDisabledEmail = async (user, reason) => {
                     <p style="color: #999; font-size: 12px;">You will not be able to log in until your account is re-enabled.</p>
                 </div>
             `,
-        };
-        await transporter.sendMail(mailOptions);
+        });
         console.log(`✅ Disabled account email sent to: ${user.email}`);
     } catch (error) {
         console.error("❌ Error sending disabled account email:", error);
-        throw new Error("Failed to send disabled account email");
+        throw new Error(`Failed to send disabled account email: ${error.message}`);
     }
 };
 
 export const sendAccountDeactivatedEmail = async (user) => {
     try {
-        const transporter = getTransporter();
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
+        await sendEmailMessage({
             to: user.email,
             subject: "Your Account Has Been Deactivated - SOLEVIA",
             html: `
@@ -189,23 +269,23 @@ export const sendAccountDeactivatedEmail = async (user) => {
                     <p>The SOLEVIA Team</p>
                 </div>
             `,
-        };
-        await transporter.sendMail(mailOptions);
+        });
         console.log(`✅ Deactivation email sent to: ${user.email}`);
     } catch (error) {
         console.error("❌ Error sending deactivation email:", error);
-        // We do not throw an error here to prevent blocking the deactivation flow if email fails
     }
 };
 
 export const sendAccountDeletionRequestedEmail = async (user, expirationDate) => {
     try {
-        const transporter = getTransporter();
-        const formattedDate = new Date(expirationDate).toLocaleDateString('en-US', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        const formattedDate = new Date(expirationDate).toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
         });
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
+
+        await sendEmailMessage({
             to: user.email,
             subject: "Account Deletion Request Received - SOLEVIA",
             html: `
@@ -224,8 +304,7 @@ export const sendAccountDeletionRequestedEmail = async (user, expirationDate) =>
                     <p>The SOLEVIA Team</p>
                 </div>
             `,
-        };
-        await transporter.sendMail(mailOptions);
+        });
         console.log(`✅ Deletion request email sent to: ${user.email}`);
     } catch (error) {
         console.error("❌ Error sending deletion request email:", error);

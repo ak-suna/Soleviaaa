@@ -142,6 +142,7 @@ import reactionRoutes from "./routes/reactionRoutes.js";
 import analyticsRoutes from './routes/analyticsRoutes.js'; // ← ANALYTICS IMPORT
 // ADD this import:
 import peerConnectRoutes from "./routes/peerConnectRoutes.js";
+import { verifyEmailTransport } from "./utils/sendEmail.js";
 
 dotenv.config();
 
@@ -201,7 +202,8 @@ app.get("/", (req, res) => {
 initializeSocket(server);
 
 // ============ START AGENDA JOBS AND SERVER ============
-connectDB().then(() => {
+connectDB().then(async () => {
+    await verifyEmailTransport();
     startNotificationJobs()
         .then(() => {
             console.log("✅ Notification system initialized");

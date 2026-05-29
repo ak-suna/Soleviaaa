@@ -4,6 +4,7 @@ import {
     loginUser,
     registerUser,
     verifyEmail,
+    resendVerificationEmail,
     forgotPassword,
     resetPasswordController,
     refreshToken
@@ -24,6 +25,7 @@ const router = express.Router();
 router.post("/signup", validateRequest(registerSchema), registerUser);
 router.post("/login", validateRequest(loginSchema), loginUser);
 router.get("/verify-email/:code", verifyEmail);
+router.post("/resend-verification", resendVerificationEmail);
 
 // 🆕 NEW: Password reset routes
 router.post("/forgot-password", forgotPassword);

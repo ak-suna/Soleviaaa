@@ -65,8 +65,14 @@ export const registerUser = async (req, res) => {
         const registeredUser = await addUsers(req.body);
         console.log(registeredUser);
 
-        // Send verification email
-        await sendVerificationEmail(registeredUser);
+        // Send verification email (don't fail registration if email delivery fails)
+        let emailSent = true;
+        try {
+            await sendVerificationEmail(registeredUser);
+        } catch (emailErr) {
+            emailSent = false;
+            console.error("❌ User registered but verification email failed:", emailErr.message);
+        }
 
         const token = generateToken({
             id: registeredUser._id,
@@ -77,8 +83,11 @@ export const registerUser = async (req, res) => {
             isVerified: registeredUser.isVerified
         });
         res.status(200).json({
-            message: "Registration Successfull. Please check your email to verify your account.",
+            message: emailSent
+                ? "Registration Successfull. Please check your email to verify your account."
+                : "Registration successful, but we could not send the verification email. Please use resend verification on the login page.",
             token: token,
+            emailSent,
         });
     } catch (err) {
         let status = 400;
@@ -182,6 +191,29 @@ export const verifyEmail = async (req, res) => {
     } catch (err) {
         console.error("❌ Error verifying email: ", err);
         res.status(500).json({ error: "Email verification failed" });
+    }
+};
+
+export const resendVerificationEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ error: "Email is required" });
+        }
+
+        const user = await User.findOne({ email: email.trim() });
+        if (!user) {
+            return res.status(404).json({ error: "No account found with this email" });
+        }
+        if (user.isVerified) {
+            return res.status(200).json({ message: "Email is already verified. You can log in." });
+        }
+
+        await sendVerificationEmail(user);
+        res.status(200).json({ message: "Verification email sent. Please check your inbox." });
+    } catch (err) {
+        console.error("❌ Error resending verification email:", err);
+        res.status(500).json({ error: err.message || "Failed to send verification email" });
     }
 };
 

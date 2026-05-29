@@ -274,7 +274,7 @@
 
 // export default LoginForm;
 import React, { useState } from "react";
-import { login, isVerified, reactivateAccount, cancelAccountDeletion } from "../services/auth";
+import { login, isVerified, reactivateAccount, cancelAccountDeletion, resendVerification } from "../services/auth";
 import { useNavigate, Link } from "react-router-dom";
 import { loginSchema } from "../utils/validationSchemas";
 import { initializeEncryption } from '../utils/encryption';
@@ -298,6 +298,24 @@ const LoginForm = () => {
 
     // 🆕 NEW: Password visibility state tracking
     const [showPassword, setShowPassword] = useState(false);
+    const [resendLoading, setResendLoading] = useState(false);
+
+    const handleResendVerification = async () => {
+        if (!formData.email) {
+            setError("Enter your email above, then click resend verification.");
+            return;
+        }
+        setResendLoading(true);
+        setError("");
+        try {
+            const result = await resendVerification(formData.email);
+            setToast({ show: true, message: result.message, type: "success" });
+        } catch (err) {
+            setToast({ show: true, message: err.message, type: "error" });
+        } finally {
+            setResendLoading(false);
+        }
+    };
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -580,6 +598,18 @@ const LoginForm = () => {
                                     )}
                                 </button>
                             </form>
+
+                            <p className="text-center text-gray-600 mt-4 text-sm">
+                                Didn't get a verification email?{" "}
+                                <button
+                                    type="button"
+                                    onClick={handleResendVerification}
+                                    disabled={resendLoading}
+                                    className="text-[#759a68] hover:text-[#6ca859] font-semibold transition-colors duration-300 hover:underline disabled:opacity-50"
+                                >
+                                    {resendLoading ? "Sending..." : "Resend verification email"}
+                                </button>
+                            </p>
 
                             <p className="text-center text-gray-600 mt-6">
                                 Don't have an account?{" "}

@@ -1,5 +1,5 @@
 import { Mood } from "../models/Mood.js";
-import config from "../src/config.js";
+import { User } from "../models/User.js";
 import Habit from "../models/Habit.js";
 import HabitDay from "../models/HabitDay.js";
 import Journal from "../models/Journal.js";
@@ -496,11 +496,12 @@ export const getAnalyticsSummary = async (req, res) => {
         const allJournals = await Journal.find({ user: userId });
         const allGoalsCompleted = await Goal.find({ user: userId, status: 'completed' });
 
-        // Calculate streaks from backend service
-        const streaksResponse = await fetch(`${config.BACKEND_URL}/api/mood/streaks`, {
-            headers: { Authorization: req.headers.authorization }
-        });
-        const streaks = await streaksResponse.json();
+        // Calculate streaks directly (avoid HTTP self-call — breaks on Render if BACKEND_URL is wrong)
+        const user = await User.findById(userId).select("moodStreak habitStreak");
+        const streaks = {
+            moodStreak: user?.moodStreak || { current: 0, best: 0 },
+            habitStreak: user?.habitStreak || { current: 0, best: 0 },
+        };
 
         const achievements = [
             {
