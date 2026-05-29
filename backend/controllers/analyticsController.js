@@ -1,4 +1,5 @@
 import { Mood } from "../models/Mood.js";
+import config from "../src/config.js";
 import Habit from "../models/Habit.js";
 import HabitDay from "../models/HabitDay.js";
 import Journal from "../models/Journal.js";
@@ -496,7 +497,7 @@ export const getAnalyticsSummary = async (req, res) => {
         const allGoalsCompleted = await Goal.find({ user: userId, status: 'completed' });
 
         // Calculate streaks from backend service
-        const streaksResponse = await fetch(`http://localhost:5000/api/mood/streaks`, {
+        const streaksResponse = await fetch(`${config.BACKEND_URL}/api/mood/streaks`, {
             headers: { Authorization: req.headers.authorization }
         });
         const streaks = await streaksResponse.json();

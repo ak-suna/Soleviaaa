@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getToken } from "../services/auth";
+import config from "../config";
 import { Trophy } from "lucide-react";
 
 const TrophyCard = () => {
@@ -9,7 +10,7 @@ const TrophyCard = () => {
     useEffect(() => {
         const fetchPastChallenges = async () => {
             try {
-                const res = await fetch("http://localhost:5000/api/challenges/past", {
+                const res = await fetch(`${config.BACKEND_URL}/api/challenges/past`, {
                     headers: { Authorization: `Bearer ${getToken()}` }
                 });
                 const data = await res.json();

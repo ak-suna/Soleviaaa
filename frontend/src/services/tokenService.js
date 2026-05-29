@@ -1,5 +1,6 @@
 // services/tokenService.js
 import { getToken, setToken, logout } from './auth';
+import config from '../config';
 
 let refreshPromise = null;
 
@@ -18,7 +19,7 @@ export async function refreshToken() {
                 return;
             }
 
-            const response = await fetch('http://localhost:5000/api/users/refresh-token', {
+            const response = await fetch(`${config.BACKEND_URL}/api/users/refresh-token`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${currentToken}`,

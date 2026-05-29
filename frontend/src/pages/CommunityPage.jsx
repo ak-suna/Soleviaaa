@@ -8,6 +8,7 @@ import { Plus, Users, Trophy, ArrowRight, CheckCircle, Menu } from 'lucide-react
 import { getPosts, getUserGroups, getUserChallenges } from "../services/communityService";
 import CreatePostModal from "../components/CreatePostModal";
 import CommunityFeed from "../components/CommunityFeed";
+import config from "../config";
 import { getToken } from "../services/auth";
 
 const CommunityPage = () => {
@@ -53,7 +54,7 @@ const CommunityPage = () => {
     const { data: pastChallengesData } = useQuery({
         queryKey: ["community", "pastChallenges"],
         queryFn: async () => {
-            const res = await fetch("http://localhost:5000/api/challenges/past", {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/past`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();

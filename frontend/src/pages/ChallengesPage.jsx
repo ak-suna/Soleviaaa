@@ -4,6 +4,7 @@ import { Trophy, Search, CheckCircle } from "lucide-react";
 import { getToken } from "../services/auth";
 import Sidebar from "../components/Sidebar";
 import confetti from "canvas-confetti";
+import config from "../config";
 
 const ChallengesPage = () => {
     const navigate = useNavigate();
@@ -20,7 +21,7 @@ const ChallengesPage = () => {
     const fetchJoinedChallenges = async () => {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:5000/api/challenges", {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();
@@ -36,7 +37,7 @@ const ChallengesPage = () => {
 
     const fetchPastChallenges = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/challenges/past", {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/past`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();

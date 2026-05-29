@@ -7,6 +7,7 @@ import JoinRequestsModal from "../components/JoinRequestsModal";
 import AdminSidebar from "../components/AdminSidebar";
 import MobileMenu from "../components/MobileMenu";
 import { showError, showSuccess, confirmAction } from "../utils/uiFeedback";
+import config from "../config";
 // import NotificationBell from '../components/NotificationBell';
 
 const AdminGroupsPage = () => {
@@ -35,7 +36,7 @@ const AdminGroupsPage = () => {
         setLoading(true);
         try {
             const response = await fetch(
-                "http://localhost:5000/api/groups?limit=100",
+                `${config.BACKEND_URL}/api/groups?limit=100`,
                 { headers: { Authorization: `Bearer ${getToken()}` } }
             );
             const data = await response.json();
@@ -52,7 +53,7 @@ const AdminGroupsPage = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch("http://localhost:5000/api/groups", {
+            const response = await fetch(`${config.BACKEND_URL}/api/groups`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -78,7 +79,7 @@ const AdminGroupsPage = () => {
 
         try {
             const response = await fetch(
-                `http://localhost:5000/api/groups/${groupId}`,
+                `${config.BACKEND_URL}/api/groups/${groupId}`,
                 {
                     method: "PUT",
                     headers: {
@@ -108,7 +109,7 @@ const AdminGroupsPage = () => {
 
         try {
             const response = await fetch(
-                `http://localhost:5000/api/groups/${groupId}`,
+                `${config.BACKEND_URL}/api/groups/${groupId}`,
                 {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${getToken()}` }

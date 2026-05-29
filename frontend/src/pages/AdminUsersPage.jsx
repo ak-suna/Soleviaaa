@@ -7,6 +7,7 @@ import MobileMenu from "../components/MobileMenu";
 import NotificationBell from '../components/NotificationBell';
 import DataTable from "../components/DataTable";
 import Modal from "../components/Modal";
+import config from "../config";
 
 const AdminUsersPage = () => {
     const navigate = useNavigate();
@@ -27,7 +28,7 @@ const AdminUsersPage = () => {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:5000/api/admin/users", {
+            const response = await fetch(`${config.BACKEND_URL}/api/admin/users`, {
                 headers: { Authorization: `Bearer ${getToken()}` },
             });
             const data = await response.json();
@@ -56,7 +57,7 @@ const AdminUsersPage = () => {
     const handleDisableUser = async (userId, currentStatus, reason) => {
         const action = currentStatus ? "enable" : "disable";
         try {
-            const response = await fetch(`http://localhost:5000/api/admin/users/${userId}/status`, {
+            const response = await fetch(`${config.BACKEND_URL}/api/admin/users/${userId}/status`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -76,7 +77,7 @@ const AdminUsersPage = () => {
 
     const changeRole = async (userId, newRole) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/admin/users/${userId}/role`, {
+            const response = await fetch(`${config.BACKEND_URL}/api/admin/users/${userId}/role`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

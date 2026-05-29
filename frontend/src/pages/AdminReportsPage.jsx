@@ -7,6 +7,7 @@ import AdminSidebar from "../components/AdminSidebar";
 import MobileMenu from "../components/MobileMenu";
 import { showError, showSuccess } from "../utils/uiFeedback";
 // import NotificationBell from '../components/NotificationBell';
+import config from "../config";
 
 const AdminReportsPage = () => {
     const navigate = useNavigate();
@@ -23,7 +24,7 @@ const AdminReportsPage = () => {
         setLoading(true);
         try {
             const response = await fetch(
-                `http://localhost:5000/api/reports?status=${filter}`,
+                `${config.BACKEND_URL}/api/reports?status=${filter}`,
                 { headers: { Authorization: `Bearer ${getToken()}` } }
             );
             const data = await response.json();
@@ -43,7 +44,7 @@ const AdminReportsPage = () => {
     const updateReportStatus = async (reportId, status, action, notes) => {
         try {
             const response = await fetch(
-                `http://localhost:5000/api/reports/${reportId}`,
+                `${config.BACKEND_URL}/api/reports/${reportId}`,
                 {
                     method: "PUT",
                     headers: {

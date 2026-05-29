@@ -10,10 +10,11 @@ import { jwtDecode } from "jwt-decode";
 import { ArrowLeft, Clock, Check, Send, Link, Calendar } from "lucide-react";
 import { io } from "socket.io-client";
 import Sidebar from "../components/Sidebar";
+import config from "../config";
 // import NotificationBell from "../components/NotificationBell";
 // import { Settings } from "lucide-react";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = config.BACKEND_URL;
 
 const AVATAR_COLORS = [
   ["#f8ba90", "#f4873e"],

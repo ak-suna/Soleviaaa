@@ -4,6 +4,7 @@ import { Trophy, Plus, Edit2, Trash2, X, AlertTriangle, Users, Calendar, Menu } 
 import AdminSidebar from "../components/AdminSidebar";
 import MobileMenu from "../components/MobileMenu";
 import { showError, showSuccess, confirmAction } from "../utils/uiFeedback";
+import config from "../config";
 
 const AdminChallengesPage = () => {
     const [activeTab, setActiveTab] = useState("templates");
@@ -31,7 +32,7 @@ const AdminChallengesPage = () => {
     const fetchTemplates = async () => {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:5000/api/challenges/admin/templates", {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/admin/templates`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();
@@ -47,7 +48,7 @@ const AdminChallengesPage = () => {
 
     const fetchLiveChallenges = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/challenges", {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();
@@ -86,8 +87,8 @@ const AdminChallengesPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const url = editingTemplate
-            ? `http://localhost:5000/api/challenges/admin/templates/${editingTemplate._id}`
-            : "http://localhost:5000/api/challenges/admin/templates";
+            ? `${config.BACKEND_URL}/api/challenges/admin/templates/${editingTemplate._id}`
+            : `${config.BACKEND_URL}/api/challenges/admin/templates`;
         const method = editingTemplate ? "PATCH" : "POST";
 
         try {
@@ -114,7 +115,7 @@ const AdminChallengesPage = () => {
         const confirmed = await confirmAction("Delete this template?", { confirmText: "Delete" });
         if (!confirmed) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/admin/templates/${id}`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/admin/templates/${id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${getToken()}` }
             });

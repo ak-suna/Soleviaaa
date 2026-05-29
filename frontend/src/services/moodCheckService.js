@@ -1,5 +1,7 @@
 import { fetchWithAuth } from "./fetchWithAuth";
-const API_BASE_URL = "http://localhost:5000/api";
+import config from "../config";
+
+const API_BASE_URL = `${config.BACKEND_URL}/api`;
 
 // // Check if user needs to log mood
 export const shouldShowMoodCheck = async () => {

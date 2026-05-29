@@ -3,8 +3,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { io } from "socket.io-client";
+import config from "../config";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = config.BACKEND_URL;
 
 
 let socket = null;

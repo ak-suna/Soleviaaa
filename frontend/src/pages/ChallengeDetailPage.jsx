@@ -5,6 +5,7 @@ import { getToken } from "../services/auth";
 import Sidebar from "../components/Sidebar";
 import confetti from "canvas-confetti";
 import { showError, confirmAction } from "../utils/uiFeedback";
+import config from "../config";
 
 const ChallengeDetailPage = () => {
     const { id } = useParams();
@@ -32,7 +33,7 @@ const ChallengeDetailPage = () => {
     const fetchChallenge = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${id}`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();
@@ -52,7 +53,7 @@ const ChallengeDetailPage = () => {
 
     const fetchFeed = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${id}/feed`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}/feed`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();
@@ -65,7 +66,7 @@ const ChallengeDetailPage = () => {
 
     const handleJoin = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${id}/join`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}/join`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
@@ -81,7 +82,7 @@ const ChallengeDetailPage = () => {
         const confirmed = await confirmAction("Leave this challenge?", { confirmText: "Leave" });
         if (!confirmed) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${id}/leave`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}/leave`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
@@ -96,7 +97,7 @@ const ChallengeDetailPage = () => {
     const handleMarkDone = async () => {
         setMarkingDone(true);
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${id}/complete-today`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}/complete-today`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
@@ -125,7 +126,7 @@ const ChallengeDetailPage = () => {
         if (!postContent.trim()) return;
         setPosting(true);
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${id}/feed`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}/feed`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -146,7 +147,7 @@ const ChallengeDetailPage = () => {
 
     const handleReact = async (postId, emoji) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${id}/feed/${postId}/react`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}/feed/${postId}/react`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

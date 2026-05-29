@@ -13,6 +13,7 @@ import FontSizeToggle from "../components/FontSizeToggle";
 import Toast from "../components/Toast";
 import axios from "axios";
 import { deriveKey, encryptContent, decryptContent, initializeEncryption } from "../utils/encryption";
+import config from "../config";
 
 const SettingsPage = () => {
     const navigate = useNavigate();
@@ -134,7 +135,7 @@ const SettingsPage = () => {
         try {
             // 1. Fetch all journal entries
             const token = getToken();
-            const API_URL = 'http://localhost:5000/api/journal';
+            const API_URL = `${config.BACKEND_URL}/api/journal`;
             const response = await axios.get(API_URL, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -744,7 +745,7 @@ const SettingsPage = () => {
 };
 
 function NotificationSettingsContent() {
-    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+    const BACKEND_URL = config.BACKEND_URL;
 
     const [preferences, setPreferences] = useState({
         habits: { inApp: true, email: true },

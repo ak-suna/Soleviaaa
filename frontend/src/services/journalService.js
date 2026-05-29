@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { getToken } from './auth';
+import config from '../config';
 
-const API_URL = 'http://localhost:5000/api/journal';
+const API_URL = `${config.BACKEND_URL}/api/journal`;
 
 const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${getToken()}` }

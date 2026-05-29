@@ -495,6 +495,7 @@ import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
 } from "recharts";
+import config from "../config";
 
 const ADMIN_FILTERED_NOTIFICATION_TYPES = [
     "MOOD_REMINDER_MORNING",
@@ -503,7 +504,7 @@ const ADMIN_FILTERED_NOTIFICATION_TYPES = [
     "HABIT_REMINDER",
 ];
 
-const API = "http://localhost:5000/api";
+const API = `${config.BACKEND_URL}/api`;
 
 const authHeaders = () => ({
     "Content-Type": "application/json",

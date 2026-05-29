@@ -1,6 +1,7 @@
 import { getToken } from "./auth";
+import config from "../config";
 
-const API_URL = "http://localhost:5000/api/profile";
+const API_URL = `${config.BACKEND_URL}/api/profile`;
 
 // Get user profile
 export const getProfile = async () => {

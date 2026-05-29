@@ -4,6 +4,7 @@ import { Trophy, ArrowLeft, CheckCircle } from 'lucide-react';
 import { getToken } from "../services/auth";
 import Sidebar from "../components/Sidebar";
 import { showError, confirmAction } from "../utils/uiFeedback";
+import config from "../config";
 
 const BrowseChallengesPage = () => {
     const navigate = useNavigate();
@@ -19,7 +20,7 @@ const BrowseChallengesPage = () => {
     const fetchChallenges = async () => {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:5000/api/challenges", {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();
@@ -34,7 +35,7 @@ const BrowseChallengesPage = () => {
 
     const fetchPastChallenges = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/challenges/past", {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/past`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
             const data = await res.json();
@@ -47,7 +48,7 @@ const BrowseChallengesPage = () => {
 
     const handleJoin = async (challengeId) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${challengeId}/join`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${challengeId}/join`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${getToken()}` }
             });
@@ -63,7 +64,7 @@ const BrowseChallengesPage = () => {
         const confirmed = await confirmAction("Leave this challenge?", { confirmText: "Leave" });
         if (!confirmed) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/challenges/${challengeId}/leave`, {
+            const res = await fetch(`${config.BACKEND_URL}/api/challenges/${challengeId}/leave`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${getToken()}` }
             });

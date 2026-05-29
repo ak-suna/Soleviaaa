@@ -449,6 +449,7 @@ import ActivityCharts from '../components/analytics/ActivityCharts';
 import AchievementBadges from '../components/analytics/AchievementBadges';
 import { BarChart2, Lightbulb } from 'lucide-react';
 import { getToken } from '../services/auth';
+import config from '../config';
 
 const AnalyticsPage = () => {
     const [mainDashboardData, setMainDashboardData] = useState(null);
@@ -486,7 +487,7 @@ const AnalyticsPage = () => {
     useEffect(() => {
         const fetchActiveGoals = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/goals', getAuthHeader());
+                const response = await axios.get(`${config.BACKEND_URL}/api/goals`, getAuthHeader());
                 const active = response.data.filter(g => g.status === 'active');
                 setActiveGoals(active);
             } catch (error) {

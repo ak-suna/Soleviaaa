@@ -1,6 +1,7 @@
 import { jwtDecode } from "jwt-decode"; // ✅ correct for v3+
+import config from "../config";
 
-const API_URL = "http://localhost:5000/api/users";
+const API_URL = `${config.BACKEND_URL}/api/users`;
 export const signup = async (userData) => {
     try {
         const response = await fetch(`${API_URL}/signup`, {

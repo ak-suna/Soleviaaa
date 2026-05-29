@@ -1,3 +1,5 @@
+import config from "../config";
+
 // Mark weekly group task as completed
 export const completeWeeklyTask = async (groupId) => {
     const response = await fetch(`${API_BASE_URL}/groups/${groupId}/complete-weekly-task`, {
@@ -66,7 +68,7 @@ export const disableGroupMember = async (groupId, userId, disabled, reason) => {
         throw error;
     }
 };
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = `${config.BACKEND_URL}/api`;
 
 // Helper to get auth headers
 const getAuthHeaders = () => {
