@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, Send, Trash2, MoreVertical, Flag, UserX } from "lucide-react";
 import { addComment, addReaction, deleteComment } from "../services/communityService";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import { useEffect, useRef } from "react";
 import ReportModal from "./ReportModal";
 import { showError, confirmAction } from "../utils/uiFeedback";
@@ -116,11 +116,11 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
     const renderPostContent = (content = "") => {
         const lines = normalizeStructuredSessionContent(content).split("\n");
         const rendered = [];
-    
+
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             const nextLine = lines[i + 1] || "";
-    
+
             if (line.startsWith("# ")) {
                 rendered.push(
                     <h3 key={`main-${i}`} className="text-lg font-bold text-gray-900 dark:text-white mt-2 mb-1">
@@ -129,14 +129,14 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                 );
                 continue;
             }
-    
+
             if (line.startsWith("## ")) {
                 rendered.push(
                     <h4 key={`sub-${i}`} className="text-sm font-semibold text-gray-800 dark:text-gray-200 mt-2 mb-1 uppercase tracking-wide">
                         {renderLineWithLinks(line.slice(3))}
                     </h4>
                 );
-    
+
                 const heading = line.slice(3).trim().toLowerCase();
                 if (heading === "meeting link" && isUrl(nextLine.trim())) {
                     const url = nextLine.trim();
@@ -168,19 +168,19 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                 }
                 continue;
             }
-    
+
             if (!line.trim()) {
                 rendered.push(<div key={`space-${i}`} className="h-2" />);
                 continue;
             }
-    
+
             rendered.push(
                 <p key={`line-${i}`} className="text-gray-700 dark:text-gray-300 text-left">
                     {renderLineWithLinks(line)}
                 </p>
             );
         }
-    
+
         return rendered;
     };
 

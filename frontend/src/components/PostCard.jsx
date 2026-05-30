@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, MoreVertical, Flag, Trash2, Send } from 'lucide-react';
 import { addReaction, addComment, deletePost, deleteComment } from "../services/communityService";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import ReportModal from "./ReportModal";
 import { useNavigate } from 'react-router-dom';
 import { showError, confirmAction } from "../utils/uiFeedback";
