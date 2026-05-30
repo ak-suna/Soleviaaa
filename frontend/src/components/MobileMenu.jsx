@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Home, CheckSquare, BookOpen, Users, BarChart3, Settings, LayoutDashboard, User as UserIcon, Trophy, AlertTriangle, UserPlus, Calendar } from 'lucide-react';
+import { X, Home, CheckSquare, BookOpen, Users, BarChart3, Settings, LayoutDashboard, User as UserIcon, Trophy, AlertTriangle, UserPlus, Calendar, Target } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const MobileMenu = ({ isOpen, onClose, type = 'user', groupId }) => {
@@ -9,6 +9,7 @@ const MobileMenu = ({ isOpen, onClose, type = 'user', groupId }) => {
     const userNavItems = [
         { icon: Home, label: 'Dashboard', path: '/user/dashboard' },
         { icon: CheckSquare, label: 'Habits', path: '/tasks' },
+        { icon: Target, label: 'Goals', path: '/goals' },
         { icon: BookOpen, label: 'Journal', path: '/journal' },
         { icon: Users, label: 'Community', path: '/community' },
         { icon: BarChart3, label: 'Analytics', path: '/analytics' },
@@ -44,11 +45,11 @@ const MobileMenu = ({ isOpen, onClose, type = 'user', groupId }) => {
     return (
         <div className="fixed inset-0 z-[200] lg:hidden">
             {/* Backdrop */}
-            <div 
+            <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
             />
-            
+
             {/* Menu Panel */}
             <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto">
                 {/* Header */}
@@ -73,11 +74,10 @@ const MobileMenu = ({ isOpen, onClose, type = 'user', groupId }) => {
                             <button
                                 key={item.path}
                                 onClick={() => handleNavigate(item.path)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
-                                    isActive
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${isActive
                                         ? 'bg-gradient-to-r from-[#f4873e] to-[#ff9e5e] text-white shadow-md'
                                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                                }`}
+                                    }`}
                             >
                                 <Icon className="w-5 h-5" />
                                 <span className="font-medium">{item.label}</span>

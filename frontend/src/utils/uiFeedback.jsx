@@ -14,9 +14,8 @@ export const confirmAction = (
         toast.custom(
             (t) => (
                 <div
-                    className={`w-[min(92vw,22rem)] rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl dark:border-gray-700 dark:bg-gray-800 ${
-                        t.visible ? "animate-[toast-in_180ms_ease-out]" : "animate-[toast-out_120ms_ease-in]"
-                    }`}
+                    className={`w-[min(92vw,22rem)] rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl dark:border-gray-700 dark:bg-gray-800 ${t.visible ? "animate-[toast-in_180ms_ease-out]" : "animate-[toast-out_120ms_ease-in]"
+                        }`}
                     role="alertdialog"
                     aria-live="assertive"
                     aria-label="Confirmation dialog"
