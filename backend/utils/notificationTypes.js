@@ -81,8 +81,23 @@ export const NOTIFICATION_TYPES = {
   },
   GROUP_MODERATOR_ASSIGNED: {
     priority: "HIGH",
-    defaultChannels: { inApp: true, email: false },
+    defaultChannels: { inApp: true, email: true },
     expiresInDays: 30
+  },
+  GROUP_MODERATOR_INVITATION: {
+    priority: "HIGH",
+    defaultChannels: { inApp: true, email: true },
+    expiresInDays: 7
+  },
+  GROUP_MODERATOR_ACCEPTED: {
+    priority: "MEDIUM",
+    defaultChannels: { inApp: true, email: true },
+    expiresInDays: 14
+  },
+  GROUP_MODERATOR_DECLINED: {
+    priority: "MEDIUM",
+    defaultChannels: { inApp: true, email: true },
+    expiresInDays: 14
   },
 };
 

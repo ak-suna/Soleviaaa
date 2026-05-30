@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProfile, updateProfile, changePassword } from "../services/profile";
 import { logout, deactivateAccount, requestAccountDeletion, getToken } from "../services/auth";
-import { ChevronRight, LogOut, Save, X, Check, Camera, Moon, Sun, ChevronLeft, AlertTriangle, Menu } from "lucide-react";
+import { ChevronRight, LogOut, Save, X, Check, Camera, Moon, Sun, AlertTriangle, Menu } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
@@ -27,7 +27,7 @@ const SettingsPage = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
-    
+
     // Lifecycle state
     const [toast, setToast] = useState({ show: false, message: "", type: "success" });
     const [showDeactivateModal, setShowDeactivateModal] = useState(false);
@@ -152,9 +152,9 @@ const SettingsPage = () => {
                     const decryptedText = decryptContent(entry.content, oldKey);
                     // Encrypt with new key
                     const newEncryptedContent = encryptContent(decryptedText, newKey);
-                    
+
                     // Update the entry on the backend
-                    return axios.put(`${API_URL}/${entry._id}`, 
+                    return axios.put(`${API_URL}/${entry._id}`,
                         { content: newEncryptedContent },
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
@@ -287,8 +287,8 @@ const SettingsPage = () => {
                 to="/dashboard"
                 className="flex items-center mb-4 lg:mb-6 text-gray-700 dark:text-gray-300 hover:text-[#f4873e] dark:hover:text-orange-400 transition font-medium"
             >
-                <ChevronLeft className="mr-2 w-5 h-5" />
-                Back to Dashboard
+                {/* <ChevronLeft className="mr-2 w-5 h-5" /> */}
+                {/* Back to Dashboard */}
             </Link>
 
             {/* Toast Notification */}
@@ -624,7 +624,7 @@ const SettingsPage = () => {
                                     <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-6 text-center">
                                         Account Management
                                     </h3>
-                                    
+
                                     <div className="space-y-6">
                                         <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-orange-50 dark:bg-gray-800 rounded-xl border border-orange-200 dark:border-gray-600">
                                             <div className="mb-4 sm:mb-0">
@@ -669,18 +669,18 @@ const SettingsPage = () => {
                         >
                             <X className="w-5 h-5" />
                         </button>
-                        
+
                         <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-6 mx-auto">
                             <AlertTriangle className="w-8 h-8 text-orange-500" />
                         </div>
-                        
+
                         <h3 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-2" style={{ fontFamily: "Brasika" }}>
                             Deactivate Account?
                         </h3>
                         <p className="text-gray-600 dark:text-gray-300 text-center mb-6 leading-relaxed">
                             Your profile will be hidden and you won't receive notifications. You can reactivate anytime by logging back in.
                         </p>
-                        
+
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowDeactivateModal(false)}
@@ -710,18 +710,18 @@ const SettingsPage = () => {
                         >
                             <X className="w-5 h-5" />
                         </button>
-                        
+
                         <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6 mx-auto">
                             <AlertTriangle className="w-8 h-8 text-red-500" />
                         </div>
-                        
+
                         <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 text-center mb-2" style={{ fontFamily: "Brasika" }}>
                             Request Deletion?
                         </h3>
                         <p className="text-gray-600 dark:text-gray-300 text-center mb-6 leading-relaxed">
                             Your account will be scheduled for permanent deletion in 30 days. You can cancel this request by logging in before the grace period ends.
                         </p>
-                        
+
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowDeleteModal(false)}
@@ -760,14 +760,8 @@ function NotificationSettingsContent() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
 
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => {
-        fetchPreferences();
-    }, []);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const fetchPreferences = async () => {
+    // Wrap fetchPreferences in useCallback to stabilize it
+    const fetchPreferences = useCallback(async () => {
         try {
             const token = localStorage.getItem("token");
             const response = await fetch(`${BACKEND_URL}/api/notifications/preferences`, {
@@ -785,7 +779,11 @@ function NotificationSettingsContent() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [BACKEND_URL]); // Add BACKEND_URL as dependency since it's from config
+
+    useEffect(() => {
+        fetchPreferences();
+    }, [fetchPreferences]); // Now fetchPreferences is stable
 
     const handleToggle = (category, channel) => {
         setPreferences((prev) => ({

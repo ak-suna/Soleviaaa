@@ -36,7 +36,7 @@ const UserDashboard = () => {
 
   // Group sessions state
   const [groupSessions, setGroupSessions] = useState([]); // [{...session, groupName, groupId}]
-  const [groupMap, setGroupMap] = useState({}); // {groupId: groupName}
+  const [, setGroupMap] = useState({}); // {groupId: groupName}
   const [loadingSessions, setLoadingSessions] = useState(true);
 
 

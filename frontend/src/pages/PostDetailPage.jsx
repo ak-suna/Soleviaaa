@@ -7,7 +7,7 @@ import CommunityFeed from "../components/CommunityFeed";
 // Helper to get query param
 function useQueryParam(key) {
   const { search } = useLocation();
-  return React.useMemo(() => new URLSearchParams(search).get(key), [search]);
+  return React.useMemo(() => new URLSearchParams(search).get(key), [search, key]);
 }
 
 export default function PostDetailPage() {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { getToken } from "../services/auth";
 import { AlertTriangle, Eye, X, CheckCircle, Menu } from 'lucide-react';
 import DataTable from "../components/DataTable";
@@ -10,7 +9,6 @@ import { showError, showSuccess } from "../utils/uiFeedback";
 import config from "../config";
 
 const AdminReportsPage = () => {
-    const navigate = useNavigate();
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("pending");

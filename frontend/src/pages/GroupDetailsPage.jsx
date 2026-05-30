@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Toast from "../components/Toast";
 import Modal from "../components/Modal";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -16,13 +16,10 @@ import {
     getPendingPeerRequests,
     respondToPeerRequest
 } from "../services/communityService";
-import PostCard from "../components/PostCard";
 import CreatePostModal from "../components/CreatePostModal";
 import ModeratorCandidatesModal from "../components/ModeratorCandidatesModal";
 import WeeklyTaskModal from "../components/WeeklyTaskModal";
 import { jwtDecode } from "jwt-decode";
-import MemberCard from "../components/MemberCard";
-import { User as UserIcon } from "lucide-react";
 import CommunityFeed from "../components/CommunityFeed";
 
 
@@ -89,7 +86,7 @@ const GroupDetailsPage = () => {
 
     // Removed openChat state; chat is now a separate page
     const myConnections = connectionsData?.connections ?? [];
-    const posts = postsData?.posts ?? [];
+    const posts = useMemo(() => postsData?.posts ?? [], [postsData?.posts]);
     const loading = loadingGroup;
 
     // Modal/Toast state
@@ -183,7 +180,7 @@ const GroupDetailsPage = () => {
 
     const handleCompleteTask = async () => {
         try {
-            const res = await completeWeeklyTask(groupId);
+            await completeWeeklyTask(groupId);
             setTaskCompleted(true);
             setToast({ message: 'Great job! Weekly task completed! 🎉', type: 'success' });
             queryClient.invalidateQueries({ queryKey: ["community", "group", groupId] });
@@ -195,18 +192,6 @@ const GroupDetailsPage = () => {
     const handlePostCreated = () => {
         setShowCreatePost(false);
         queryClient.invalidateQueries({ queryKey: ["community"] });
-    };
-
-    const handlePostUpdated = (updatedPost) => {
-        queryClient.setQueryData(["community", "groupPosts", groupId], (prev) =>
-            prev ? { ...prev, posts: prev.posts.map(p => p._id === updatedPost._id ? updatedPost : p) } : prev
-        );
-    };
-
-    const handlePostDeleted = (postId) => {
-        queryClient.setQueryData(["community", "groupPosts", groupId], (prev) =>
-            prev ? { ...prev, posts: prev.posts.filter(p => p._id !== postId) } : prev
-        );
     };
 
     const handleConnect = async (recipientId) => {

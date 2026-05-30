@@ -72,7 +72,7 @@ const GroupChatPage = () => {
   const [meetingLinkInput, setMeetingLinkInput] = useState("");
   const [linkSaved, setLinkSaved] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [meetingAlert, setMeetingAlert] = useState(null); // { connectionId, link }
+  const [, setMeetingAlert] = useState(null); // { connectionId, link }
 
   const bottomRef = useRef(null);
   const activeIdRef = useRef(activeId);
@@ -96,7 +96,7 @@ const GroupChatPage = () => {
         }
       })
       .finally(() => setLoading(false));
-  }, [groupId]);
+  }, [groupId, connectionId]);
 
   useEffect(() => {
     const tok = localStorage.getItem("token");

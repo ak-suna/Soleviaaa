@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+const TERM_SECTIONS = [
+    { id: 'section-1', title: '1. About This Application' },
+    { id: 'section-2', title: '2. Eligibility' },
+    { id: 'section-3', title: '3. Data Collection and Privacy' },
+    { id: 'section-4', title: '4. Your Rights' },
+    { id: 'section-5', title: '5. Community Guidelines' },
+    { id: 'section-6', title: '6. Security' },
+    { id: 'section-7', title: '7. Limitations' },
+    { id: 'section-9', title: '9. Changes to These Terms' },
+    { id: 'section-10', title: '10. Governing Law' },
+];
+
 const TermsAndConditions = ({ onClose }) => {
     const [activeSection, setActiveSection] = useState('section-1');
     const contentRef = useRef(null);
-
-    const sections = [
-        { id: 'section-1', title: '1. About This Application' },
-        { id: 'section-2', title: '2. Eligibility' },
-        { id: 'section-3', title: '3. Data Collection and Privacy' },
-        { id: 'section-4', title: '4. Your Rights' },
-        { id: 'section-5', title: '5. Community Guidelines' },
-        { id: 'section-6', title: '6. Security' },
-        { id: 'section-7', title: '7. Limitations' },
-        { id: 'section-9', title: '9. Changes to These Terms' },
-        { id: 'section-10', title: '10. Governing Law' },
-    ];
 
     useEffect(() => {
         const observerOptions = {
@@ -33,7 +33,7 @@ const TermsAndConditions = ({ onClose }) => {
 
         const observer = new IntersectionObserver(observerCallback, observerOptions);
 
-        sections.forEach((section) => {
+        TERM_SECTIONS.forEach((section) => {
             const element = document.getElementById(section.id);
             if (element) {
                 observer.observe(element);
@@ -41,7 +41,7 @@ const TermsAndConditions = ({ onClose }) => {
         });
 
         return () => {
-            sections.forEach((section) => {
+            TERM_SECTIONS.forEach((section) => {
                 const element = document.getElementById(section.id);
                 if (element) {
                     observer.unobserve(element);
@@ -88,7 +88,7 @@ const TermsAndConditions = ({ onClose }) => {
                             By creating an account, you agree to the following terms. Please read them carefully before registering.
                         </p>
                         <ul className="space-y-2">
-                            {sections.map((section) => (
+                            {TERM_SECTIONS.map((section) => (
                                 <li key={section.id}>
                                     <button
                                         onClick={() => scrollToSection(section.id)}

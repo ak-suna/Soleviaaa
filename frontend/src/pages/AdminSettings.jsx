@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { logout, getToken } from "../services/auth";
+import { logout } from "../services/auth";
 import { getProfile, updateProfile, changePassword, uploadProfilePicture } from "../services/profile";
 import {
-    ChevronRight, LogOut, Save, X, Check, Camera,
-    Moon, Sun, ChevronLeft, AlertTriangle, Shield,
+    ChevronRight, LogOut, X, Check, Camera,
+    Moon, Sun, Shield,
     User, Palette, Lock
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";

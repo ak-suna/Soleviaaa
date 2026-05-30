@@ -484,10 +484,10 @@
 // export default AdminHome;
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { logout, getToken } from "../services/auth";
+import { getToken } from "../services/auth";
 import {
-    LogOut, Settings, Users, AlertTriangle, Trophy, Layers,
-    Lightbulb, TrendingUp, TrendingDown, RefreshCw, User, Lock, Palette,
+    Settings, Users, AlertTriangle, Trophy, Layers,
+    Lightbulb, TrendingUp, TrendingDown, RefreshCw,
 } from 'lucide-react';
 import AdminSidebar from "../components/AdminSidebar";
 import NotificationBell from "../components/NotificationBell";

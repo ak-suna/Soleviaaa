@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { X, Home, CheckSquare, BookOpen, Users, BarChart3, Settings, LayoutDashboard, User as UserIcon, Trophy, AlertTriangle, UserPlus, Calendar } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { isAdmin } from '../services/auth';
-import { jwtDecode } from 'jwt-decode';
 
 const MobileMenu = ({ isOpen, onClose, type = 'user', groupId }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const token = localStorage.getItem('token');
-    const currentUserId = token ? jwtDecode(token).id : null;
 
     const userNavItems = [
         { icon: Home, label: 'Dashboard', path: '/user/dashboard' },

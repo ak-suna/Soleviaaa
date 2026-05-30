@@ -306,7 +306,7 @@ const MemoryCapsule = () => {
         } finally {
             setLoading(false);
         }
-    }, [navigate]);
+    }, [navigate, API_URL]);
 
     useEffect(() => {
         loadCapsules();

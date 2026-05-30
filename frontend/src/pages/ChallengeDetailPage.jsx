@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Send, Trophy } from "lucide-react";
 import { getToken } from "../services/auth";
@@ -25,12 +25,7 @@ const ChallengeDetailPage = () => {
 
     const todayStr = new Date().toISOString().split("T")[0];
 
-    useEffect(() => {
-        fetchChallenge();
-        fetchFeed();
-    }, [id]);
-
-    const fetchChallenge = async () => {
+    const fetchChallenge = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}`, {
@@ -49,9 +44,9 @@ const ChallengeDetailPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
 
-    const fetchFeed = async () => {
+    const fetchFeed = useCallback(async () => {
         try {
             const res = await fetch(`${config.BACKEND_URL}/api/challenges/${id}/feed`, {
                 headers: { Authorization: `Bearer ${getToken()}` }
@@ -62,7 +57,12 @@ const ChallengeDetailPage = () => {
         } catch (err) {
             console.error("Error fetching feed:", err);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        fetchChallenge();
+        fetchFeed();
+    }, [fetchChallenge, fetchFeed]);
 
     const handleJoin = async () => {
         try {

@@ -2,6 +2,8 @@ import { SupportGroup } from "../models/SupportGroup.js";
 import { Post } from "../models/Post.js";
 import { User } from "../models/User.js";
 import { Report } from "../models/Report.js";
+import notificationService from "../services/notificationService.js";
+import Notification from "../models/Notification.js";
 
 // ==================== CANDIDATE SCORING ====================
 
@@ -84,7 +86,6 @@ export const getMemberScore = async (userId, groupId) => {
     };
 }
 // ==================== MODERATION ACTIONS ====================
-import notificationService from "../services/notificationService.js";
 
 // Get all reported posts for a group
 export const getReportedPostsForGroup = async (req, res) => {
@@ -238,16 +239,68 @@ export const getModeratorCandidates = async (req, res) => {
 
 // ==================== PROMOTION/DEMOTION ====================
 
-// Promote user to moderator
-// Promote user to moderator
+async function applyModeratorPromotion(group, userId, adminId) {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    if (group.adminId) {
+        const adminIdStr = group.adminId.toString();
+        group.members.forEach(m => {
+            const memberUserId = m.userId ? m.userId.toString() : null;
+            if (memberUserId === adminIdStr) {
+                m.role = "admin";
+            }
+        });
+    }
+
+    if (group.moderatorId && group.moderatorId.toString() !== userId.toString()) {
+        const prevMod = group.members.find(m => {
+            const memberUserId = m.userId ? m.userId.toString() : null;
+            return memberUserId === group.moderatorId.toString();
+        });
+        if (prevMod && prevMod.userId && prevMod.userId.toString() !== group.adminId?.toString()) {
+            prevMod.role = "member";
+        }
+
+        const prevModUser = await User.findById(group.moderatorId);
+        if (prevModUser) {
+            prevModUser.moderatedGroups = prevModUser.moderatedGroups.filter(
+                id => id.toString() !== group._id.toString()
+            );
+            await prevModUser.save();
+        }
+    }
+
+    group.members.forEach(m => {
+        const memberUserId = m.userId ? m.userId.toString() : null;
+        if (memberUserId === userId.toString()) {
+            m.role = "moderator";
+        }
+    });
+    group.moderatorId = userId;
+
+    if (!user.moderatedGroups.some(id => id.toString() === group._id.toString())) {
+        user.moderatedGroups.push(group._id);
+    }
+    user.promotedBy = adminId;
+    user.promotedAt = new Date();
+
+    await group.save();
+    await user.save();
+
+    return user;
+}
+
+// Admin sends moderator invitation (user must accept)
 export const promoteToModerator = async (req, res) => {
     try {
         const { userId, groupId } = req.body;
         const adminId = req.user.id;
 
-        // Only admin can promote
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ error: "Only admins can promote moderators" });
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ error: "Only admins can invite moderators" });
         }
 
         const group = await SupportGroup.findById(groupId);
@@ -260,20 +313,23 @@ export const promoteToModerator = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Check if user is a member
         const member = group.members.find(m => m.userId && m.userId.toString() === userId);
         if (!member) {
             return res.status(400).json({ error: "User is not a member of this group" });
         }
 
-        // Check if already a moderator
-        if (member.role === 'moderator') {
+        if (member.role === "moderator") {
             return res.status(400).json({ error: "User is already a moderator" });
         }
 
-        // Check eligibility
+        const existingPending = group.moderatorInvitations?.find(
+            inv => inv.userId.toString() === userId && inv.status === "pending"
+        );
+        if (existingPending) {
+            return res.status(400).json({ error: "This user already has a pending moderator invitation" });
+        }
+
         const scoreData = await getMemberScore(userId, groupId);
-        console.log('DEBUG promoteToModerator:', { userId, groupId, scoreData });
         if (!scoreData.eligible) {
             return res.status(400).json({
                 error: "User does not meet minimum requirements",
@@ -282,71 +338,185 @@ export const promoteToModerator = async (req, res) => {
             });
         }
 
-        // Always set admin's member role to 'admin'
-        if (group.adminId) {
-            const adminIdStr = group.adminId.toString();
-            group.members.forEach(m => {
-                const memberUserId = m.userId ? m.userId.toString() : null;
-                if (memberUserId === adminIdStr) {
-                    m.role = 'admin';
-                }
-            });
+        if (!group.moderatorInvitations) {
+            group.moderatorInvitations = [];
         }
 
-        // Demote previous moderator (not admin) to 'member'
-        if (group.moderatorId && group.moderatorId.toString() !== userId) {
-            const prevMod = group.members.find(m => {
-                const memberUserId = m.userId ? m.userId.toString() : null;
-                return memberUserId === group.moderatorId.toString();
-            });
-            if (prevMod && prevMod.userId && prevMod.userId.toString() !== group.adminId?.toString()) {
-                prevMod.role = 'member';
-            }
-        }
-
-        // Promote selected user to moderator
-        group.members.forEach(m => {
-            const memberUserId = m.userId ? m.userId.toString() : null;
-            if (memberUserId === userId.toString()) {
-                m.role = 'moderator';
+        group.moderatorInvitations.forEach(inv => {
+            if (inv.status === "pending" && inv.userId.toString() !== userId) {
+                inv.status = "cancelled";
+                inv.respondedAt = new Date();
             }
         });
-        group.moderatorId = userId;
+
+        group.moderatorInvitations.push({
+            userId,
+            invitedBy: adminId,
+            status: "pending",
+            invitedAt: new Date()
+        });
 
         await group.save();
 
-        // Update user record: only update moderatedGroups, not global role
-        if (!user.moderatedGroups.includes(groupId)) {
-            user.moderatedGroups.push(groupId);
-        }
-        user.promotedBy = adminId;
-        user.promotedAt = new Date();
-
-        await user.save();
-
-        // TODO: Send notification to user
+        await notificationService.createNotification({
+            userId,
+            type: "GROUP_MODERATOR_INVITATION",
+            title: "You've been invited to become a moderator",
+            message: `You've been invited to become a moderator for "${group.name}". Open your notifications to accept or decline.`,
+            data: {
+                groupId: group._id,
+                groupName: group.name,
+                invitedBy: adminId,
+                invitationStatus: "pending",
+                actionUrl: `/community/group/${group._id}`
+            },
+            channels: { inApp: true, email: true }
+        });
 
         res.status(200).json({
-            message: "User promoted to moderator successfully",
-            group: {
-                _id: group._id,
-                name: group.name
-            },
+            message: "Moderator invitation sent successfully",
+            group: { _id: group._id, name: group.name },
             user: {
                 _id: user._id,
                 firstName: user.firstName,
-                lastName: user.lastName,
-                role: user.role
+                lastName: user.lastName
             }
         });
     } catch (error) {
-        console.error("Error promoting moderator:", error);
+        console.error("Error sending moderator invitation:", error);
         res.status(500).json({
-            error: "Failed to promote moderator",
+            error: "Failed to send moderator invitation",
             details: error.message
         });
     }
-}    
+};
+
+// User accepts or declines moderator invitation
+export const respondToModeratorInvitation = async (req, res) => {
+    try {
+        const { groupId, action } = req.body;
+        const userId = req.user.id;
+
+        if (!["accept", "decline"].includes(action)) {
+            return res.status(400).json({ error: "Action must be 'accept' or 'decline'" });
+        }
+
+        const group = await SupportGroup.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ error: "Group not found" });
+        }
+
+        const invitation = group.moderatorInvitations?.find(
+            inv => inv.userId.toString() === userId && inv.status === "pending"
+        );
+        if (!invitation) {
+            return res.status(404).json({ error: "No pending moderator invitation found" });
+        }
+
+        const user = await User.findById(userId);
+        const admin = await User.findById(invitation.invitedBy);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        invitation.respondedAt = new Date();
+
+        if (action === "decline") {
+            invitation.status = "declined";
+            await group.save();
+
+            await Notification.updateMany(
+                {
+                    userId,
+                    type: "GROUP_MODERATOR_INVITATION",
+                    "data.groupId": group._id
+                },
+                {
+                    read: true,
+                    readAt: new Date(),
+                    "data.invitationStatus": "declined"
+                }
+            );
+
+            if (admin) {
+                await notificationService.createNotification({
+                    userId: admin._id,
+                    type: "GROUP_MODERATOR_DECLINED",
+                    title: "Moderator invitation declined",
+                    message: `${user.firstName} ${user.lastName} declined the moderator invitation for "${group.name}".`,
+                    data: {
+                        groupId: group._id,
+                        groupName: group.name,
+                        userId: user._id,
+                        userName: `${user.firstName} ${user.lastName}`,
+                        actionUrl: `/admin/groups/${group._id}/moderator/dashboard`
+                    },
+                    channels: { inApp: true, email: true }
+                });
+            }
+
+            return res.status(200).json({ message: "Moderator invitation declined" });
+        }
+
+        invitation.status = "accepted";
+        await applyModeratorPromotion(group, userId, invitation.invitedBy);
+
+        await Notification.updateMany(
+            {
+                userId,
+                type: "GROUP_MODERATOR_INVITATION",
+                "data.groupId": group._id
+            },
+            {
+                read: true,
+                readAt: new Date(),
+                "data.invitationStatus": "accepted"
+            }
+        );
+
+        await notificationService.createNotification({
+            userId,
+            type: "GROUP_MODERATOR_ASSIGNED",
+            title: "You are now a group moderator!",
+            message: `You accepted the invitation and are now the moderator for "${group.name}".`,
+            data: {
+                groupId: group._id,
+                groupName: group.name,
+                status: "accepted",
+                actionUrl: `/admin/groups/${group._id}/moderator/dashboard`
+            },
+            channels: { inApp: true, email: true }
+        });
+
+        if (admin) {
+            await notificationService.createNotification({
+                userId: admin._id,
+                type: "GROUP_MODERATOR_ACCEPTED",
+                title: "Moderator invitation accepted",
+                message: `${user.firstName} ${user.lastName} accepted the moderator invitation for "${group.name}".`,
+                data: {
+                    groupId: group._id,
+                    groupName: group.name,
+                    userId: user._id,
+                    userName: `${user.firstName} ${user.lastName}`,
+                    actionUrl: `/admin/groups/${group._id}/moderator/dashboard`
+                },
+                channels: { inApp: true, email: true }
+            });
+        }
+
+        res.status(200).json({
+            message: "You are now the group moderator",
+            group: { _id: group._id, name: group.name }
+        });
+    } catch (error) {
+        console.error("Error responding to moderator invitation:", error);
+        res.status(500).json({
+            error: "Failed to respond to moderator invitation",
+            details: error.message
+        });
+    }
+};
 
 // Remove moderator
 export const removeModerator = async (req, res) => {

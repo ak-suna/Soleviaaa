@@ -300,6 +300,7 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
                 {post.image && (
                     <div className="mb-4 rounded-2xl overflow-hidden border ... max-w-md mx-auto">                        <img
                         src={post.image}
+                        alt="Post attachment"
                         className="w-full h-auto" onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = 'https://placehold.co/600x400?text=Image+Unavailable';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, UserPlus, Check, XCircle, Clock } from 'lucide-react';
 import { getGroupJoinRequests, approveJoinRequest, rejectJoinRequest } from '../services/communityService';
 import Modal from './Modal';
@@ -13,11 +13,7 @@ const JoinRequestsModal = ({ groupId, groupName, onClose, onSuccess }) => {
     const [selectedRequest, setSelectedRequest] = useState(null); // { id, userName }
     const [rejectReason, setRejectReason] = useState("");
 
-    useEffect(() => {
-        fetchRequests();
-    }, [groupId]);
-
-    const fetchRequests = async () => {
+    const fetchRequests = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getGroupJoinRequests(groupId);
@@ -27,7 +23,11 @@ const JoinRequestsModal = ({ groupId, groupName, onClose, onSuccess }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [groupId]);
+
+    useEffect(() => {
+        fetchRequests();
+    }, [fetchRequests]);
 
     const handleApproveClick = (requestId, userName) => {
         setSelectedRequest({ id: requestId, userName });

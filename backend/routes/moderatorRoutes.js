@@ -2,6 +2,7 @@ import express from "express";
 import {
     getModeratorCandidates,
     promoteToModerator,
+    respondToModeratorInvitation,
     removeModerator,
     getModeratedGroups,
     getReportedPostsForGroup,
@@ -20,6 +21,7 @@ router.put("/report/:reportId/dismiss", authenticate, moderatorDismissReport);
 // Admin only - view candidates and promote/remove
 router.get("/candidates/:groupId", authenticate, authorizeRole("admin"), getModeratorCandidates);
 router.post("/promote", authenticate, authorizeRole("admin"), promoteToModerator);
+router.post("/respond", authenticate, respondToModeratorInvitation);
 router.delete("/:groupId/:userId", authenticate, authorizeRole("admin"), removeModerator);
 
 // Moderator - view their groups

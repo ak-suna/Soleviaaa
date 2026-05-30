@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Calendar, Users, Trash2, Check, Menu } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, Calendar, Users, Trash2, Check, Menu } from "lucide-react";
 import ModeratorSidebar from "../components/ModeratorSidebar";
 import MobileMenu from "../components/MobileMenu";
 import { getGroupById } from "../services/communityService";
@@ -16,8 +16,6 @@ import { confirmAction } from "../utils/uiFeedback";
 
 const GroupSessionsPage = () => {
     const { groupId } = useParams();
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
     const [showMobileMenu, setShowMobileMenu] = useState(false);
 
     const token = localStorage.getItem("token");

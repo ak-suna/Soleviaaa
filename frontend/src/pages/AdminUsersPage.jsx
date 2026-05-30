@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { getToken } from "../services/auth";
 import { Users, Menu } from 'lucide-react';
 import AdminSidebar from "../components/AdminSidebar";
 import MobileMenu from "../components/MobileMenu";
-import NotificationBell from '../components/NotificationBell';
 import DataTable from "../components/DataTable";
 import Modal from "../components/Modal";
 import config from "../config";
 
 const AdminUsersPage = () => {
-    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -42,7 +39,6 @@ const AdminUsersPage = () => {
     };
 
     const toggleUserStatus = (userId, currentStatus) => {
-        const action = currentStatus ? "enable" : "disable";
         if (currentStatus) {
             // Enable directly with confirm modal
             setDisableModal({ open: true, userId, currentStatus });

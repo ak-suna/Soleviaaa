@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { CheckCircle2, X } from 'lucide-react';
 
 const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {

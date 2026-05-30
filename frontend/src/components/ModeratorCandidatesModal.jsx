@@ -170,8 +170,8 @@
 // };
 
 // export default ModeratorCandidatesModal;
-import React, { useState, useEffect } from 'react';
-import { X, Trophy, Calendar, MessageSquare, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, Trophy, AlertCircle } from 'lucide-react';
 import { getModeratorCandidates, assignModerator } from '../services/communityService';
 import { showError, showSuccess, confirmAction } from "../utils/uiFeedback";
 
@@ -181,11 +181,7 @@ const ModeratorCandidatesModal = ({ groupId, groupName, onClose, onSuccess }) =>
     const [loading, setLoading] = useState(true);
     const [promoting, setPromoting] = useState(null);
 
-    useEffect(() => {
-        fetchCandidates();
-    }, [groupId]);
-
-    const fetchCandidates = async () => {
+    const fetchCandidates = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getModeratorCandidates(groupId);
@@ -195,19 +191,26 @@ const ModeratorCandidatesModal = ({ groupId, groupName, onClose, onSuccess }) =>
         } finally {
             setLoading(false);
         }
-    };
+    }, [groupId]);
+
+    useEffect(() => {
+        fetchCandidates();
+    }, [fetchCandidates]);
 
     const handlePromote = async (userId, firstName, lastName) => {
-        const confirmed = await confirmAction(`Promote ${firstName} ${lastName} to moderator?`, { confirmText: "Promote" });
+        const confirmed = await confirmAction(
+            `Send a moderator invitation to ${firstName} ${lastName}? They must accept before becoming moderator.`,
+            { confirmText: "Send invitation" }
+        );
         if (!confirmed) return;
         setPromoting(userId);
         try {
             await assignModerator(groupId, userId);
-            showSuccess(`${firstName} ${lastName} is now the group moderator!`);
+            showSuccess(`Invitation sent to ${firstName} ${lastName}`);
             onSuccess && onSuccess();
             onClose();
         } catch (error) {
-            showError(error.message || "Failed to promote moderator");
+            showError(error.message || "Failed to send moderator invitation");
         } finally {
             setPromoting(null);
         }
@@ -327,10 +330,10 @@ const ModeratorCandidatesModal = ({ groupId, groupName, onClose, onSuccess }) =>
                                         {promoting === (candidate.user._id || candidate.userId) ? (
                                             <div className="flex items-center gap-2">
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                Promoting...
+                                                Sending...
                                             </div>
                                         ) : (
-                                            'Promote to Moderator'
+                                            'Invite as Moderator'
                                         )}
                                     </button>
                                 </div>

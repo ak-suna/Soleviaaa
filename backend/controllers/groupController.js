@@ -85,7 +85,7 @@ export const setGroupMemberDisabled = async (req, res) => {
                     userId,
                     type: "GROUP_MEMBER_DISABLED",
                     title: `You have been disabled in group: ${group.name}`,
-                    message: `You have been disabled from participating in the group. Reason: ${reason || "No reason provided."}`,
+                    message: `You have been disabled from participating in the group. Reason: ${reason || "No reason provided."} \n\nIf you believe this is a mistake, please contact customer support at anuskagc100@gmail.com.`,
                     data: { groupId, groupName: group.name, reason },
                 });
             } catch (err) {
@@ -770,38 +770,11 @@ export const getGroupMembers = async (req, res) => {
     }
 };
 
-// Assign moderator (admin only)
+// Assign moderator (admin only) — sends invitation; user must accept
 export const assignModerator = async (req, res) => {
-    try {
-        const { groupId } = req.params;
-        const { userId } = req.body;
-        const group = await SupportGroup.findById(groupId);
-        if (!group) return res.status(404).json({ error: "Group not found" });
-        if (req.user.role !== 'admin') return res.status(403).json({ error: "Unauthorized" });
-        // Check eligibility
-        const member = group.members.find(m => m.userId.toString() === userId);
-        if (!member) return res.status(400).json({ error: "User is not a group member" });
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ error: "User not found" });
-        if ((member.points || 0) < (group.requiredPoints || 100)) {
-            return res.status(400).json({ error: "User does not meet required points" });
-        }
-        member.role = "moderator";
-        group.moderatorId = userId;
-        await group.save();
-        // Notify user
-        await notificationService.createNotification({
-            userId,
-            type: "GROUP_MODERATOR_ASSIGNED",
-            title: `You are now a group moderator!`,
-            message: `You have been promoted to moderator for group '${group.name}'.`,
-            data: { groupId: group._id, groupName: group.name, status: "promoted" }
-        });
-        res.status(200).json({ message: "Moderator assigned", groupId: group._id, moderatorId: userId });
-    } catch (error) {
-        console.error("Error assigning moderator:", error);
-        res.status(500).json({ error: "Failed to assign moderator" });
-    }
+    req.body.groupId = req.params.groupId;
+    const { promoteToModerator } = await import("./moderatorController.js");
+    return promoteToModerator(req, res);
 };
 export const getUserJoinRequests = async (req, res) => {
     const userId = req.user.id;

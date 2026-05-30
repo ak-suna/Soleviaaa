@@ -229,6 +229,8 @@ import { useState, useEffect } from "react";
 import { useNotificationContext } from "../contexts/NotificationContext";
 import { Bell, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { respondToModeratorInvitation } from "../services/communityService";
+import { showError, showSuccess } from "../utils/uiFeedback";
 
 
 export default function NotificationBell({ filterTypes = [] }) {
@@ -241,13 +243,14 @@ export default function NotificationBell({ filterTypes = [] }) {
     deleteNotification
   } = useNotificationContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [respondingId, setRespondingId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (notifications.length === 0) {
       fetchNotifications();
     }
-  }, []);
+  }, [fetchNotifications, notifications.length]);
 
   // Filter out any notification types passed via filterTypes prop
   const visibleNotifications = filterTypes.length > 0
@@ -260,8 +263,31 @@ export default function NotificationBell({ filterTypes = [] }) {
     "MOOD_REMINDER_MORNING",
     "MOOD_REMINDER_EVENING",
     "STREAK_ACHIEVED",
-    "STREAK_AT_RISK"
+    "STREAK_AT_RISK",
+    "GROUP_MODERATOR_INVITATION"
   ]);
+
+  const handleModeratorInvitationResponse = async (notification, action) => {
+    const groupId = notification.data?.groupId;
+    if (!groupId) {
+      showError("Invalid invitation — missing group info.");
+      return;
+    }
+
+    setRespondingId(`${notification._id}-${action}`);
+    try {
+      const result = await respondToModeratorInvitation(groupId, action);
+      showSuccess(result.message || (action === "accept" ? "You are now a moderator!" : "Invitation declined"));
+      if (!notification.read) {
+        await markAsRead(notification._id);
+      }
+      await fetchNotifications();
+    } catch (err) {
+      showError(err.message || "Failed to respond to invitation");
+    } finally {
+      setRespondingId(null);
+    }
+  };
 
   // Enhanced click handler
   const handleNotificationClick = (notification) => {
@@ -293,6 +319,19 @@ export default function NotificationBell({ filterTypes = [] }) {
     // Group accept: go to group
     if (notification.type === "GROUP_JOIN_APPROVED" && notification.data?.groupId) {
       navigate(`/community/group/${notification.data.groupId}`);
+      setIsOpen(false);
+      return;
+    }
+    if (notification.type === "GROUP_MODERATOR_ASSIGNED" && notification.data?.groupId) {
+      navigate(`/admin/groups/${notification.data.groupId}/moderator/dashboard`);
+      setIsOpen(false);
+      return;
+    }
+    if (
+      (notification.type === "GROUP_MODERATOR_ACCEPTED" || notification.type === "GROUP_MODERATOR_DECLINED") &&
+      notification.data?.groupId
+    ) {
+      navigate(`/admin/groups/${notification.data.groupId}/moderator/dashboard`);
       setIsOpen(false);
       return;
     }
@@ -371,6 +410,8 @@ export default function NotificationBell({ filterTypes = [] }) {
                     onDelete={() => {
                       deleteNotification(notification._id);
                     }}
+                    onModeratorResponse={handleModeratorInvitationResponse}
+                    respondingId={respondingId}
                   />
                 ))
               )}
@@ -388,20 +429,26 @@ export default function NotificationBell({ filterTypes = [] }) {
   );
 }
 
-function NotificationItem({ notification, onClick, onDelete }) {
+function NotificationItem({ notification, onClick, onDelete, onModeratorResponse, respondingId }) {
   const priorityDots = {
     HIGH: "bg-red-500",
     MEDIUM: "bg-yellow-500",
     LOW: "bg-blue-500"
   };
 
-  // Check-in notifications are not clickable
   const isCheckin = [
     "MOOD_REMINDER_MORNING",
     "MOOD_REMINDER_EVENING",
     "STREAK_ACHIEVED",
     "STREAK_AT_RISK"
   ].includes(notification.type);
+
+  const isModeratorInvite =
+    notification.type === "GROUP_MODERATOR_INVITATION" &&
+    notification.data?.invitationStatus !== "accepted" &&
+    notification.data?.invitationStatus !== "declined";
+
+  const isNonClickable = isCheckin || isModeratorInvite;
 
   // Likes/comments: show user name and preview
   let message = notification.message;
@@ -417,12 +464,12 @@ function NotificationItem({ notification, onClick, onDelete }) {
 
   return (
     <div
-      className={`p-4 ${isCheckin ? 'cursor-default' : 'hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'} transition ${
+      className={`p-4 ${isNonClickable ? 'cursor-default' : 'hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'} transition ${
         !notification.read ? "bg-blue-50 dark:bg-blue-900/20" : ""
       }`}
-      onClick={isCheckin ? undefined : onClick}
-      tabIndex={isCheckin ? -1 : 0}
-      aria-disabled={isCheckin}
+      onClick={isNonClickable ? undefined : onClick}
+      tabIndex={isNonClickable ? -1 : 0}
+      aria-disabled={isNonClickable}
     >
       <div className="flex items-start gap-3">
         <div
@@ -445,6 +492,32 @@ function NotificationItem({ notification, onClick, onDelete }) {
             </button>
           </div>
           <p className="text-sm font-normal text-gray-600 dark:text-gray-300 mt-1">{message}</p>
+          {isModeratorInvite && (
+            <div className="flex gap-2 mt-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onModeratorResponse(notification, "accept");
+                }}
+                disabled={!!respondingId}
+                className="px-3 py-1.5 text-xs font-semibold rounded-full bg-[#89beab] text-white hover:bg-[#6fa893] disabled:opacity-50"
+              >
+                {respondingId === `${notification._id}-accept` ? "Accepting..." : "Accept"}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onModeratorResponse(notification, "decline");
+                }}
+                disabled={!!respondingId}
+                className="px-3 py-1.5 text-xs font-semibold rounded-full bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50"
+              >
+                {respondingId === `${notification._id}-decline` ? "Declining..." : "Decline"}
+              </button>
+            </div>
+          )}
           <p className="text-xs font-normal text-gray-400 dark:text-gray-500 mt-2">
             {formatTimestamp(notification.createdAt)}
           </p>

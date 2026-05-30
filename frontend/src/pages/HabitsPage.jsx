@@ -21,7 +21,7 @@ const HabitsPage = () => {
   const [frequency, setFrequency] = useState('daily');
   const [daysOfWeek, setDaysOfWeek] = useState([]);
   const [linkedGoalId, setLinkedGoalId] = useState('');
-  const [linkedGoalsMap, setLinkedGoalsMap] = useState({});
+  const [, setLinkedGoalsMap] = useState({});
   const [goalContribution, setGoalContribution] = useState(10);
   const [habitDate, setHabitDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -42,7 +42,7 @@ const HabitsPage = () => {
   const [historyPage, setHistoryPage] = useState(1);           // NEW
   const [hasMoreHistory, setHasMoreHistory] = useState(false); // NEW
   // const [setLinkedGoalsMap] = useState({});
-  const [pastHabits, setPastHabits] = useState([]);
+  const [, setPastHabits] = useState([]);
 
   const handleAddHabit = async () => {
     if (newHabitName.trim()) {
@@ -102,25 +102,6 @@ const HabitsPage = () => {
 
   const completedCount = habits.filter(h => h.completedToday).length;
   const percentage = habits.length > 0 ? Math.round((completedCount / habits.length) * 100) : 0;
-
-  // Load first page of history (7 days)
-  const loadHistory = async () => {
-    try {
-      setLoadingHistory(true);
-      setHistoryPage(1);
-      const [result, past] = await Promise.all([
-        getHabitHistory(1, 7),
-        getPastHabits()
-      ]);
-      setHabitHistory(result.data);
-      setHasMoreHistory(result.hasMore);
-      setPastHabits(past);
-    } catch (error) {
-      console.error('Error loading habit history:', error);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
 
   // Load next page and append
   const loadMoreHistory = async () => {
@@ -223,9 +204,11 @@ const HabitsPage = () => {
   };
 
   // Filter goals by category for the dropdown (but allow selecting from any)
-  const filteredGoals = newHabitCategory && newHabitCategory !== 'Other'
+  const filteredGoals = (newHabitCategory && newHabitCategory !== 'Other'
     ? goals.filter(g => g.category === newHabitCategory)
-    : goals;
+    : goals
+).filter(goal => goal.status === 'active');
+const hasActiveGoals = filteredGoals.some(goal => goal.status === 'active');
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 p-4 lg:p-6 flex flex-col lg:flex-row gap-4 lg:gap-6 relative">
@@ -320,6 +303,7 @@ const HabitsPage = () => {
                   type="date"
                   value={habitDate}
                   onChange={(e) => setHabitDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]} 
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-3 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-[#89beab] outline-none"
                 />
               )}
@@ -387,23 +371,33 @@ const HabitsPage = () => {
               )}
 
               {/* Link to Goal */}
-              <div className="mb-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Link to Goal (Optional):
-                </label>
-                <select
-                  value={linkedGoalId}
-                  onChange={(e) => setLinkedGoalId(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-[#89beab] outline-none"
-                >
-                  <option value="">None</option>
-                  {filteredGoals.map(goal => (
-                    <option key={goal.id} value={goal.id}>
-                      {goal.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+<div className="mb-3">
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Link to Goal (Optional):
+    </label>
+    <select
+        value={linkedGoalId}
+        onChange={(e) => setLinkedGoalId(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-[#89beab] outline-none"
+    >
+        <option value="">None</option>
+        {filteredGoals.map(goal => (
+            <option key={goal.id} value={goal.id}>
+                {goal.name} ({goal.progress}% complete)
+            </option>
+        ))}
+    </select>
+    {!hasActiveGoals && goals.length > 0 && (
+        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+            ⚠️ No active goals available. Only goals with status "active" can be linked.
+        </p>
+    )}
+    {goals.length === 0 && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            No goals yet. Create a goal first to link habits.
+        </p>
+    )}
+</div>
 
               {/* Goal Contribution */}
               {linkedGoalId && (

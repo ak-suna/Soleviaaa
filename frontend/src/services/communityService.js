@@ -604,13 +604,26 @@ export const assignModerator = async (groupId, userId) => {
         });
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.details || error.error || "Failed to assign moderator");
+            throw new Error(error.details || error.error || "Failed to send moderator invitation");
         }
         return await response.json();
     } catch (error) {
-        console.error("Error assigning moderator:", error);
+        console.error("Error sending moderator invitation:", error);
         throw error;
     }
+};
+
+export const respondToModeratorInvitation = async (groupId, action) => {
+    const response = await fetch(`${API_BASE_URL}/moderators/respond`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ groupId, action })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || "Failed to respond to invitation");
+    }
+    return data;
 };
 
 export const removeModerator = async (groupId, userId) => {

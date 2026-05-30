@@ -76,6 +76,19 @@ const supportGroupSchema = new Schema({
         default: null
     },
 
+    // Pending moderator invitations (user must accept before promotion)
+    moderatorInvitations: [{
+        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        invitedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        status: {
+            type: String,
+            enum: ["pending", "accepted", "declined", "cancelled"],
+            default: "pending"
+        },
+        invitedAt: { type: Date, default: Date.now },
+        respondedAt: { type: Date, default: null }
+    }],
+
 
     // Points required to be eligible for moderator
     requiredPoints: {

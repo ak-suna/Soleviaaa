@@ -203,7 +203,7 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
             }, 300);
             return () => clearTimeout(timeout);
         }
-    }, [highlightCommentId, expandedComments]);
+    }, [highlightCommentId, expandedComments, resolvedCommentRef]);
 
     return (
         <div className="space-y-4 bg-white dark:bg-gray-900 p-2 rounded-2xl relative">

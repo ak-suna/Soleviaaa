@@ -1319,7 +1319,7 @@ const Journal = () => {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, API_URL]);
 
   // Check if coming from mood check - RUNS ONCE ON MOUNT
   useEffect(() => {
@@ -1402,7 +1402,7 @@ const Journal = () => {
         editor.commands.setContent(content);
       }
     }
-  }, [editor, isWriting, editingEntry]); // Only runs when isWriting changes
+  }, [editor, isWriting, editingEntry, content]); // Only runs when isWriting changes
 
   const saveEntry = async () => {
     if (!content.trim() || content === '<p></p>') {
