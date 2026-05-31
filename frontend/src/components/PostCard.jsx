@@ -234,7 +234,7 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
                 />
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-gray-700">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -257,11 +257,11 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
                         </button>
 
                         {showOptions && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                            <div className="absolute right-0 mt-2 w-48 sm:w-52 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
                                 {isOwnPost ? (
                                     <button
                                         onClick={handleDeletePost}
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-red-600 font-medium"
+                                        className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-red-600 font-medium"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                         Delete Post
@@ -272,7 +272,7 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
                                             setReportConfig({ targetId: post._id, targetType: 'post' });
                                             setShowOptions(false);
                                         }}
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                                        className="w-full text-left px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
                                     >
                                         <Flag className="w-4 h-4" />
                                         Report Post
@@ -298,7 +298,7 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
 
                 {/* Post Image Render */}
                 {post.image && (
-                    <div className="mb-4 rounded-2xl overflow-hidden border ... max-w-md mx-auto">                        <img
+                            <div className="mb-4 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 max-w-full sm:max-w-md mx-auto">                        <img
                         src={post.image}
                         alt="Post attachment"
                         className="w-full h-auto" onError={(e) => {
@@ -338,13 +338,13 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
                 )}
 
                 {/* Footer Actions */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                         {["❤️", "😆", "😢", "🤩", "😡"].map(emoji => (
                             <button
                                 key={emoji}
                                 onClick={() => handleReaction(emoji)}
-                                className={`text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${userReaction?.emoji === emoji ? 'bg-orange-50 dark:bg-orange-900/20 scale-110' : ''
+                                className={`text-lg sm:text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${userReaction?.emoji === emoji ? 'bg-orange-50 dark:bg-orange-900/20 scale-110' : ''
                                     }`}
                                 title={`React with ${emoji}`}
                             >
@@ -355,42 +355,42 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
 
                     <button
                         onClick={() => setShowComments(!showComments)}
-                        className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-[#f4873e] transition-colors"
+                        className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-[#f4873e] transition-colors text-sm sm:text-base"
                     >
                         <MessageCircle className="w-5 h-5" />
-                        <span className="text-sm font-medium">{post.comments?.length || 0} Comments</span>
+                        <span className="text-sm font-medium whitespace-nowrap">{post.comments?.length || 0} Comments</span>
                     </button>
                 </div>
 
                 {/* Comments Section */}
                 {showComments && (
                     <div className="mt-4 space-y-4">
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-col sm:flex-row">
                             <input
                                 type="text"
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
                                 placeholder="Write a thoughtful comment..."
-                                className="flex-1 px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#89beab] text-sm"
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#89beab] text-sm"
                                 onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                             />
                             <button
                                 onClick={handleAddComment}
                                 disabled={submittingComment || !commentText.trim()}
-                                className="p-2 rounded-xl bg-[#89beab] text-white hover:bg-[#f4873e] transition-colors disabled:opacity-50"
+                                className="p-2.5 rounded-xl bg-[#89beab] text-white hover:bg-[#f4873e] transition-colors disabled:opacity-50 self-start sm:self-auto"
                             >
                                 <Send className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                        <div className="space-y-3 max-h-[260px] sm:max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                             {post.comments?.map(comment => (
                                 <div key={comment._id} className="flex gap-3">
                                     <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[10px] font-bold flex-shrink-0 uppercase">
                                         {comment.userId?.firstName?.[0]}{comment.userId?.lastName?.[0]}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="bg-gray-100 dark:bg-gray-700/50 rounded-2xl p-3">
+                                        <div className="bg-gray-100 dark:bg-gray-700/50 rounded-2xl p-3 sm:p-3.5">
                                             <p className="font-bold text-xs text-gray-900 dark:text-white">
                                                 {comment.userId?.firstName} {comment.userId?.lastName}
                                             </p>
@@ -405,14 +405,14 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
                                             {comment.userId?._id === currentUserId ? (
                                                 <button
                                                     onClick={() => handleDeleteComment(comment._id)}
-                                                    className="text-[10px] text-red-400 hover:text-red-600 font-medium"
+                                                    className="text-[10px] sm:text-xs text-red-400 hover:text-red-600 font-medium"
                                                 >
                                                     Delete
                                                 </button>
                                             ) : (
                                                 <button
                                                     onClick={() => setReportConfig({ targetId: comment._id, targetType: 'comment' })}
-                                                    className="text-[10px] text-gray-400 hover:text-red-500 font-medium"
+                                                    className="text-[10px] sm:text-xs text-gray-400 hover:text-red-500 font-medium"
                                                 >
                                                     Report
                                                 </button>

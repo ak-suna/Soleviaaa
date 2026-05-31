@@ -231,11 +231,11 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                     <div
                         key={post._id}
                         ref={isFocus ? focusRef : undefined}
-                        className={`bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl p-6 border-2 border-gray-200 dark:border-gray-600 hover:border-[#f4873e] transition-all ${isFocus ? "ring-4 ring-[#f4873e]" : ""}`}
+                        className={`bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl p-4 sm:p-5 lg:p-6 border-2 border-gray-200 dark:border-gray-600 hover:border-[#f4873e] transition-all ${isFocus ? "ring-4 ring-[#f4873e]" : ""}`}
                     >
                         {/* Post Header + Caption */}
                         <div className="flex items-start gap-3 mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#f4873e] to-[#ff9e5e] rounded-full flex items-center justify-center text-white font-bold">
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-[#f4873e] to-[#ff9e5e] rounded-full flex items-center justify-center text-white font-bold text-sm">
                                 {post.userId?.firstName?.[0]}
                                 {post.userId?.lastName?.[0]}
                             </div>
@@ -310,7 +310,7 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                                         </div>
                                     )}
                                 </div>
-                                <div className="mb-4 text-left mt-1 whitespace-pre-wrap">
+                                <div className="mb-4 text-left mt-1 whitespace-pre-wrap text-sm sm:text-base">
                                     {renderPostContent(post.content)}
                                 </div>
                             </div>
@@ -322,7 +322,7 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                                 <img
                                     src={post.image}
                                     alt="Post attachment"
-                                    className="w-full h-auto max-h-[500px] object-contain block mx-auto"
+                                    className="w-full h-auto max-h-[320px] sm:max-h-[500px] object-contain block mx-auto"
                                     loading="lazy"
                                     onError={(e) => {
                                         console.error("Image failed to load:", post.image);
@@ -334,13 +334,13 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                         {/* --- IMAGE SECTION END --- */}
 
                         {/* Reactions */}
-                        <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600 pt-3">
-                            <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-3 sm:gap-4 text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600 pt-3 flex-wrap">
+                            <div className="flex items-center gap-1 flex-wrap">
                                 {REACTION_EMOJIS.map((emoji) => (
                                     <button
                                         key={emoji}
                                         onClick={() => handleReaction(post._id, emoji)}
-                                        className={`text-lg hover:scale-125 transition-transform ${userReact?.emoji === emoji ? "scale-125" : ""
+                                        className={`text-base sm:text-lg hover:scale-125 transition-transform ${userReact?.emoji === emoji ? "scale-125" : ""
                                             }`}
                                         title={`React with ${emoji}`}
                                     >
@@ -348,7 +348,7 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                                     </button>
                                 ))}
                                 {Object.keys(counts).length > 0 && (
-                                    <span className="text-xs ml-1 text-gray-500 dark:text-gray-400">
+                                    <span className="text-[11px] sm:text-xs ml-1 text-gray-500 dark:text-gray-400">
                                         {Object.entries(counts)
                                             .map(([e, c]) => `${e} ${c}`)
                                             .join(" ")}
@@ -357,7 +357,7 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                             </div>
                             <button
                                 onClick={() => toggleComments(post._id)}
-                                className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#89beab] transition-colors ml-auto"
+                                className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#89beab] transition-colors ml-auto text-sm sm:text-base"
                             >
                                 <MessageCircle className="w-5 h-5" />
                                 <span className="text-sm">{comments.length}</span>
@@ -378,7 +378,7 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                                             }))
                                         }
                                         placeholder="Write a comment..."
-                                        className="flex-1 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#89beab]"
+                                        className="flex-1 px-4 py-2.5 rounded-full bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#89beab] text-sm"
                                         onKeyDown={(e) =>
                                             e.key === "Enter" && handleAddComment(post._id)
                                         }
@@ -386,7 +386,7 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                                     <button
                                         onClick={() => handleAddComment(post._id)}
                                         disabled={submitting || !text.trim()}
-                                        className="p-2 rounded-full bg-[#89beab] text-white hover:bg-[#f4873e] transition-colors disabled:opacity-50"
+                                        className="p-2.5 rounded-full bg-[#89beab] text-white hover:bg-[#f4873e] transition-colors disabled:opacity-50 self-start sm:self-auto"
                                     >
                                         <Send className="w-5 h-5" />
                                     </button>
@@ -400,13 +400,13 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                                                 className={`flex gap-3 ${isHighlight ? "ring-2 ring-[#f4873e]" : ""}`}
                                                 ref={isHighlight ? resolvedCommentRef : undefined}
                                             >
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#89beab] to-[#f4873e] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#89beab] to-[#f4873e] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
                                                     {comment.userId?.firstName?.[0]}
                                                     {comment.userId?.lastName?.[0]}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <div className="bg-gray-100 dark:bg-gray-600 rounded-lg p-3">
-                                                        <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                                                    <div className="bg-gray-100 dark:bg-gray-600 rounded-lg p-3 sm:p-3.5">
+                                                        <p className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white">
                                                             {comment.userId?.firstName}{" "}
                                                             {comment.userId?.lastName}
                                                         </p>
@@ -414,8 +414,8 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                                                             {comment.content}
                                                         </p>
                                                     </div>
-                                                    <div className="flex items-center gap-3 mt-1 px-3">
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                    <div className="flex items-center gap-3 mt-1 px-3 flex-wrap">
+                                                        <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
                                                             {formatDate(comment.createdAt)}
                                                         </span>
                                                         {String(comment.userId?._id) === String(currentUserId) ? (
@@ -426,14 +426,14 @@ const CommunityFeed = ({ posts, getCategoryColor, highlightCommentId, commentRef
                                                                         comment._id
                                                                     )
                                                                 }
-                                                                className="text-xs text-red-600 hover:underline"
+                                                                className="text-[11px] sm:text-xs text-red-600 hover:underline"
                                                             >
                                                                 Delete
                                                             </button>
                                                         ) : (
                                                             <button
                                                                 onClick={() => setReportConfig({ targetId: comment._id, targetType: 'comment' })}
-                                                                className="text-xs text-gray-400 hover:text-red-500 font-medium"
+                                                                className="text-[11px] sm:text-xs text-gray-400 hover:text-red-500 font-medium"
                                                             >
                                                                 Report
                                                             </button>

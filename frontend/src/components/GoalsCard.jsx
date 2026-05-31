@@ -61,7 +61,7 @@ const GoalsCard = () => {
   };
 
   return (
-    <div className="bg-[#f9d9e3] dark:bg-gray-800 p-6 lg:p-10 rounded-[40px] w-full flex flex-col min-h-0 overflow-hidden max-h-[340px]">
+    <div className="bg-[#f9d9e3] dark:bg-gray-800 p-4 sm:p-5 lg:p-10 rounded-3xl lg:rounded-[40px] w-full flex flex-col min-h-0 overflow-hidden max-h-[300px] sm:max-h-[340px]">
 
       <div className="flex justify-between items-start mb-3">
         <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wide opacity-80">
@@ -75,9 +75,9 @@ const GoalsCard = () => {
         </button>
       </div>
 
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="w-5 h-5 text-pink-600" />
-        <span className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+        <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600" />
+        <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
           {avgProgress}%
         </span>
         <span className="text-xs text-gray-600 dark:text-gray-300">Average</span>
@@ -85,7 +85,7 @@ const GoalsCard = () => {
 
       {/* Add Goal Quick Form */}
       {showAddForm && (
-        <div className="mb-3 bg-white dark:bg-gray-700 rounded-lg p-3">
+        <div className="mb-3 bg-white dark:bg-gray-700 rounded-2xl p-3">
           <input
             type="text"
             value={newGoal.name}
@@ -93,9 +93,9 @@ const GoalsCard = () => {
               setNewGoal({ ...newGoal, name: e.target.value })
             }
             placeholder="Goal name..."
-            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded text-sm mb-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-sm mb-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
-          <div className="flex gap-2 mb-2">
+          <div className="flex gap-2 mb-2 flex-col sm:flex-row">
             <input
               type="number"
               value={newGoal.target}
@@ -103,7 +103,7 @@ const GoalsCard = () => {
                 setNewGoal({ ...newGoal, target: e.target.value })
               }
               placeholder="Target"
-              className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
             <input
               type="text"
@@ -112,19 +112,19 @@ const GoalsCard = () => {
                 setNewGoal({ ...newGoal, unit: e.target.value })
               }
               placeholder="Unit"
-              className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-col sm:flex-row">
             <button
               onClick={handleAddGoal}
-              className="px-3 py-1 bg-pink-600 text-white rounded text-sm hover:bg-pink-700"
+              className="px-3 py-2 bg-pink-600 text-white rounded-xl text-sm hover:bg-pink-700"
             >
               Add
             </button>
             <button
               onClick={() => setShowAddForm(false)}
-              className="px-3 py-1 bg-gray-300 dark:bg-gray-600 rounded text-sm hover:bg-gray-400 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
+              className="px-3 py-2 bg-gray-300 dark:bg-gray-600 rounded-xl text-sm hover:bg-gray-400 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
             >
               Cancel
             </button>
@@ -133,24 +133,24 @@ const GoalsCard = () => {
       )}
 
       {/* Scrollable Goals List */}
-      <div className="flex-1 min-h-0 max-h-[200px] overflow-y-auto space-y-4 pr-1 scrollbar-thin scrollbar-thumb-pink-300 dark:scrollbar-thumb-pink-700 scrollbar-track-transparent">
+      <div className="flex-1 min-h-0 max-h-[180px] sm:max-h-[200px] overflow-y-auto space-y-3 sm:space-y-4 pr-1 scrollbar-thin scrollbar-thumb-pink-300 dark:scrollbar-thumb-pink-700 scrollbar-track-transparent">
         {activeGoals.map((goal) => (
           <div key={goal.id}>
-            <div className="flex justify-between items-end mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            <div className="flex justify-between items-end mb-1.5 sm:mb-2 gap-2">
+              <span className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200">
                 {goal.name}
               </span>
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+              <span className="text-[11px] sm:text-xs font-bold text-gray-500 dark:text-gray-400">
                 {goal.progress || 0}%
               </span>
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+            <div className="text-[11px] sm:text-xs text-gray-600 dark:text-gray-400 mb-1">
               {goal.current || 0} / {goal.target} {goal.unit}
             </div>
             {goal.deadline && (() => {
               const daysRemaining = calculateDaysRemaining(goal.deadline);
               return (
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <div className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mb-1">
                   Due: {formatDate(goal.deadline)}
                   {daysRemaining !== null && (
                     <span className="ml-1">
@@ -176,7 +176,7 @@ const GoalsCard = () => {
 
       <button
         onClick={() => setShowAddForm(!showAddForm)}
-        className="w-full flex items-center justify-center gap-2 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-200 text-sm transition-all mt-3"
+        className="w-full flex items-center justify-center gap-2 py-2.5 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-xl text-gray-700 dark:text-gray-200 text-sm transition-all mt-3"
       >
         <Plus className="w-4 h-4" />
         Quick Add

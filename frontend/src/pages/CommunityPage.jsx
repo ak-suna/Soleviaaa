@@ -101,7 +101,7 @@ const CommunityPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-gray-900 p-4 lg:p-6 flex flex-col lg:flex-row gap-4 lg:gap-6">
+        <div className="min-h-screen bg-white dark:bg-gray-900 p-3 pt-16 sm:p-4 lg:p-6 flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-x-hidden">
             {/* Mobile Menu Button */}
             <button
                 onClick={() => setShowMobileMenu(true)}
@@ -115,7 +115,7 @@ const CommunityPage = () => {
             <MobileMenu isOpen={showMobileMenu} onClose={() => setShowMobileMenu(false)} type="user" />
 
             {/* MAIN CONTENT AREA - Matches dashboard width */}
-            <div className="flex-1 lg:ml-28 border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-[50px] p-4 lg:p-8 shadow-[0_10px_25px_rgba(248,186,144,0.25)] dark:shadow-[0_10px_25px_rgba(0,0,0,0.3)] max-h-[775px] overflow-y-auto">
+            <div className="flex-1 lg:ml-28 border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-3xl lg:rounded-[50px] p-4 sm:p-5 lg:p-8 shadow-[0_10px_25px_rgba(248,186,144,0.25)] dark:shadow-[0_10px_25px_rgba(0,0,0,0.3)] max-h-none lg:max-h-[775px] overflow-y-auto">
 
                 {/* Header */}
                 <div className="mb-6 text-left">
