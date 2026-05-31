@@ -7,7 +7,8 @@ import {
     getPendingRequests,
     sendMessage,
     getMessages,
-    saveCalendlyLink
+    saveCalendlyLink,
+    deleteConnection
 } from "../controllers/peerConnectController.js";
 import {
     createSession,
@@ -26,6 +27,7 @@ router.get("/pending", authenticate, getPendingRequests);
 router.get("/:connectionId/messages", authenticate, getMessages);
 router.post("/:connectionId/messages", authenticate, sendMessage);
 router.put("/:connectionId/calendly", authenticate, saveCalendlyLink);
+router.delete("/:connectionId", authenticate, deleteConnection);
 
 // ===== GROUP SESSIONS =====
 router.post("/:groupId/sessions", authenticate, createSession);

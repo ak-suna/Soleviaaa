@@ -95,6 +95,18 @@ export default function NotificationBell({ filterTypes = [] }) {
       setIsOpen(false);
       return;
     }
+    // Peer connect request: go to group and show requests modal
+    if (notification.type === "PEER_CONNECT_REQUEST" && notification.data?.groupId) {
+      navigate(`/community/group/${notification.data.groupId}?showRequests=true`);
+      setIsOpen(false);
+      return;
+    }
+    // Peer connect accepted: go to group chat
+    if (notification.type === "PEER_CONNECT_ACCEPTED" && notification.data?.groupId && notification.data?.connectionId) {
+      navigate(`/community/group/${notification.data.groupId}/chat/${notification.data.connectionId}`);
+      setIsOpen(false);
+      return;
+    }
     if (notification.type === "GROUP_MODERATOR_ASSIGNED" && notification.data?.groupId) {
       navigate(`/admin/groups/${notification.data.groupId}/moderator/dashboard`);
       setIsOpen(false);

@@ -3,6 +3,7 @@ import { SupportGroup } from "../models/SupportGroup.js";
 import { User } from "../models/User.js";
 import notificationService from "../services/notificationService.js";
 import { getIO } from "../sockets/notificationSocket.js";
+import { encrypt, decrypt } from "../utils/encryption.js";
 
 // Send a peer connect request
 export const sendConnectRequest = async (req, res) => {
@@ -34,7 +35,10 @@ export const sendConnectRequest = async (req, res) => {
         });
 
         if (existing) {
-            return res.status(400).json({ error: "A connection already exists or is pending" });
+            if (existing.status === "pending") {
+                return res.status(400).json({ error: "A connection request is already pending with this member." });
+            }
+            return res.status(400).json({ error: "You are already connected with this member." });
         }
 
         const connection = await PeerConnect.create({ groupId, requesterId, recipientId });
@@ -74,14 +78,22 @@ export const respondToRequest = async (req, res) => {
         connection.status = action === "accept" ? "accepted" : "declined";
         await connection.save();
 
+        const recipient = await User.findById(userId).select("firstName lastName");
         if (action === "accept") {
-            const recipient = await User.findById(userId).select("firstName lastName");
             await notificationService.createNotification({
                 userId: connection.requesterId,
                 type: "PEER_CONNECT_ACCEPTED",
                 title: "Peer Connect Accepted",
                 message: `${recipient.firstName} ${recipient.lastName} accepted your connect request!`,
                 data: { connectionId: connection._id, groupId: connection.groupId }
+            });
+        } else {
+            await notificationService.createNotification({
+                userId: connection.requesterId,
+                type: "PEER_CONNECT_DECLINED",
+                title: "Peer Connect Declined",
+                message: `${recipient.firstName} ${recipient.lastName} declined your connect request.`,
+                data: { groupId: connection.groupId }
             });
         }
 
@@ -151,12 +163,20 @@ export const sendMessage = async (req, res) => {
             return res.status(400).json({ error: "Connection is not active" });
         }
 
-        const message = { senderId: userId, content: content.trim() };
+        const encryptedContent = encrypt(content.trim());
+        const message = { senderId: userId, content: encryptedContent };
         connection.messages.push(message);
         await connection.save();
 
         const savedMessage = connection.messages[connection.messages.length - 1];
         const sender = await User.findById(userId).select("firstName lastName");
+
+        // Decrypt for real-time delivery
+        const decryptedMessage = {
+            ...savedMessage.toObject(),
+            content: content.trim(),
+            senderName: `${sender.firstName} ${sender.lastName}`
+        };
 
         // Real-time delivery via existing socket
         const recipientId = connection.requesterId.toString() === userId
@@ -169,14 +189,14 @@ export const sendMessage = async (req, res) => {
             if (recipientUser?.socketId) {
                 io.to(recipientUser.socketId).emit("peer-message", {
                     connectionId,
-                    message: { ...savedMessage.toObject(), senderName: `${sender.firstName} ${sender.lastName}` }
+                    message: decryptedMessage
                 });
             }
         } catch (e) {
             console.error("Socket emit error (non-fatal):", e.message);
         }
 
-        res.status(201).json({ message: savedMessage });
+        res.status(201).json({ message: decryptedMessage });
     } catch (error) {
         console.error("Error sending message:", error);
         res.status(500).json({ error: "Failed to send message" });
@@ -207,7 +227,14 @@ export const getMessages = async (req, res) => {
         });
         if (updated) await connection.save();
 
-        res.status(200).json({ messages: connection.messages });
+        // Decrypt all messages before sending to client
+        const decryptedMessages = connection.messages.map(m => {
+            const msgObj = m.toObject();
+            msgObj.content = decrypt(msgObj.content);
+            return msgObj;
+        });
+
+        res.status(200).json({ messages: decryptedMessages });
     } catch (error) {
         console.error("Error fetching messages:", error);
         res.status(500).json({ error: "Failed to fetch messages" });
@@ -235,5 +262,39 @@ export const saveCalendlyLink = async (req, res) => {
     } catch (error) {
         console.error("Error saving meeting link:", error);
         res.status(500).json({ error: "Failed to save link" });
+    }
+};
+
+// Delete a connection (Disconnect)
+export const deleteConnection = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { connectionId } = req.params;
+
+        const connection = await PeerConnect.findById(connectionId);
+        if (!connection) return res.status(404).json({ error: "Connection not found" });
+
+        const isParticipant = connection.requesterId.toString() === userId ||
+            connection.recipientId.toString() === userId;
+        if (!isParticipant) return res.status(403).json({ error: "Not authorized" });
+
+        // Notify the other person before deleting
+        const otherId = connection.requesterId.toString() === userId ? connection.recipientId : connection.requesterId;
+        const remover = await User.findById(userId).select("firstName lastName");
+
+        await notificationService.createNotification({
+            userId: otherId,
+            type: "PEER_CONNECT_REMOVED",
+            title: "Peer Connection Ended",
+            message: `${remover.firstName} ${remover.lastName} has ended the connection.`,
+            data: { groupId: connection.groupId }
+        });
+
+        await PeerConnect.findByIdAndDelete(connectionId);
+
+        res.status(200).json({ message: "Connection removed successfully" });
+    } catch (error) {
+        console.error("Error removing connection:", error);
+        res.status(500).json({ error: "Failed to remove connection" });
     }
 };

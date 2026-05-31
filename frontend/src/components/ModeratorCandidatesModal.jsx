@@ -84,7 +84,7 @@ const ModeratorCandidatesModal = ({ groupId, groupName, onClose, onSuccess }) =>
                     <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                     <div>
                         <p className="text-sm text-blue-900 dark:text-blue-100 font-semibold">
-                            Candidates must have at least <b>{candidates[0]?.requiredPoints ?? 20} points</b>, 30+ days in group, and no violations.
+                            Candidates must have at least <b>{candidates[0]?.requiredPoints ?? 20} points</b>, 10+ days in group, and no violations.
                         </p>
                         <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                             Points are earned by group activity. Violations disqualify candidates.
@@ -103,7 +103,7 @@ const ModeratorCandidatesModal = ({ groupId, groupName, onClose, onSuccess }) =>
                             No eligible candidates yet. Members need more activity!
                         </p>
                         <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
-                            Minimum: 30 days in group, {candidates[0]?.requiredPoints ?? 20} points, no violations
+                            Minimum: 10 days in group, {candidates[0]?.requiredPoints ?? 20} points, no violations
                         </p>
                     </div>
                 ) : (

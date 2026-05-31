@@ -35,6 +35,8 @@ const notificationSchema = new mongoose.Schema({
       "GROUP_MODERATOR_DECLINED",
       "PEER_CONNECT_REQUEST",
       "PEER_CONNECT_ACCEPTED",
+      "PEER_CONNECT_DECLINED",
+      "PEER_CONNECT_REMOVED",
       "GROUP_SESSION_CREATED"
     ]
   },

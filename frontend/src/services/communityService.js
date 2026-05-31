@@ -742,6 +742,18 @@ export const savePeerMeetingLink = async (connectionId, meetingLink) => {
     return savePeerCalendlyLink(connectionId, meetingLink);
 };
 
+export const deletePeerConnection = async (connectionId) => {
+    const response = await fetch(`${API_BASE_URL}/groups/connect/${connectionId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders()
+    });
+    if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Failed to remove connection");
+    }
+    return await response.json();
+};
+
 // ==================== GROUP SESSIONS ====================
 
 

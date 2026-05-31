@@ -35,11 +35,19 @@ const GroupDetailsPage = () => {
     const searchParams = new URLSearchParams(location.search);
     const focusPostId = searchParams.get("focus");
     const focusCommentId = searchParams.get("comment");
+    const showRequests = searchParams.get("showRequests");
     const focusPostRef = useRef(null);
 
     // Get current user ID
     const token = localStorage.getItem("token");
     const currentUserId = token ? jwtDecode(token).id : null;
+
+    // Open requests modal if query param is present
+    useEffect(() => {
+        if (showRequests === "true") {
+            setShowRequestsModal(true);
+        }
+    }, [showRequests]);
 
     const { data: groupData, isLoading: loadingGroup, isError: groupError } = useQuery({
         queryKey: ["community", "group", groupId],
@@ -408,7 +416,19 @@ const GroupDetailsPage = () => {
                                         Moderator Tools
                                     </button>
                                 )}
-                                {/* Members & Requests buttons */}
+                                {groupPendingRequests.length > 0 && (
+                                    <button
+                                        onClick={() => setShowRequestsModal(true)}
+                                        className="flex items-center gap-1 px-3 py-1.5 bg-[#f4873e] hover:bg-[#f8ba90] rounded-full text-sm font-semibold text-white shadow-md relative animate-pulse"
+                                        title="Pending Peer Requests"
+                                    >
+                                        <CheckCircle className="w-4 h-4" />
+                                        Peer Requests
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                                            {groupPendingRequests.length}
+                                        </span>
+                                    </button>
+                                )}
                                 <div className="flex gap-2 mt-2 flex-wrap">
                                     <button
                                         onClick={() => setShowMembersModal(true)}
@@ -418,14 +438,6 @@ const GroupDetailsPage = () => {
                                         <Users className="w-4 h-4" />
                                         Members
                                     </button>
-                                    {/* <button
-                                        onClick={() => setShowRequestsModal(true)}
-                                        className="flex items-center gap-1 px-3 py-1.5 bg-white/30 hover:bg-white/40 rounded-full text-sm font-semibold text-white"
-                                        title="Pending Requests"
-                                    >
-                                        <CheckCircle className="w-4 h-4" />
-                                        Requests
-                                    </button> */}
                                 </div>
                             </div>
                             <WeeklyTaskModal
