@@ -51,6 +51,12 @@ router.patch("/users/:id/role", authenticate, authorizeRole("admin"), async (req
 // ✅ NEW: Toggle user disabled status (Admin only)
 
 import { sendUserDisabledEmail } from "../utils/sendEmail.js";
+import { Challenge } from "../models/Challenge.js";
+import { ChallengeTemplate } from "../models/ChallengeTemplate.js";
+import { ChallengeParticipant } from "../models/ChallengeParticipant.js";
+import { Mood } from "../models/Mood.js";
+import Journal from "../models/Journal.js";
+import HabitDay from "../models/HabitDay.js";
 
 router.patch("/users/:id/status", authenticate, authorizeRole("admin"), async (req, res) => {
     try {
@@ -95,6 +101,42 @@ router.patch("/users/:id/status", authenticate, authorizeRole("admin"), async (r
     }
 });
 // TEMPORARY TEST ROUTE
+router.post("/test/activate-meditation", authenticate, authorizeRole("admin"), async (req, res) => {
+    try {
+        const title = "Meditate everyday for at least half an hour";
+        const description = "Focus on your breath and find inner peace for 30 minutes daily.";
+
+        const startDate = new Date();
+        startDate.setHours(0, 0, 0, 0);
+
+        const duration = 7; // 1 week challenge
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + duration - 1);
+        endDate.setHours(23, 59, 59, 999);
+
+        const challenge = await Challenge.create({
+            title,
+            description,
+            trackingType: "manual",
+            duration,
+            difficulty: "easy",
+            status: "active",
+            startDate,
+            endDate,
+            participantCount: 0,
+            createdBy: req.user.id
+        });
+
+        res.status(200).json({
+            message: "Meditation Challenge activated successfully",
+            challenge
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 router.post("/test/activate-challenge", authenticate, authorizeRole("admin"), async (req, res) => {
     try {
         const { ChallengeTemplate } = await import("../models/ChallengeTemplate.js");
